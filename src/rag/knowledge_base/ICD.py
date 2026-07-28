@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 from src.utils.config import load_config
 
-CONFIG = load_config(r"configs/KB/ICD.yaml")
+CONFIG = load_config(r"configs/RAG/kb_sources/ICD.yaml")
 
 COVID_CODES = [
     ("U07.1", "COVID-19, vi rút được xác định", "COVID-19, virus identified"),

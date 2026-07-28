@@ -8,9 +8,9 @@ import faiss
 import pandas as pd
 
 from src.utils.config import load_config
-from src.rag.knowledge_base.text_encoder import TextEncoder
+from rag.encoders.text_encoder import TextEncoder
 
-CONFIG = load_config(r"configs/KB/indexing.yaml")
+CONFIG = load_config(r"configs/RAG/indexing/faiss_indexing.yaml")
 
 log = logging.getLogger(__name__)
 

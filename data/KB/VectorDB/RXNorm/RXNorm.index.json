@@ -1,0 +1,11 @@
+{
+    "encoder_model": "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR",
+    "pooling": "cls",
+    "query_format": "",
+    "embedding_dim": 768,
+    "kb_parquet": "RXNorm_Preprocess.parquet",
+    "kb_parquet_sha256": "eca4b5eec7eb85f945d5027ba3001b1c3305711105c9b5cb423e46b9185f0069",
+    "number_of_vectors": 82582,
+    "meta_rows": 82582,
+    "kb": "RXNorm"
+}

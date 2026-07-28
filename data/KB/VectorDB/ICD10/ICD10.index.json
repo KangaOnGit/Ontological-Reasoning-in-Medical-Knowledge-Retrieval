@@ -1,0 +1,11 @@
+{
+    "encoder_model": "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR",
+    "pooling": "cls",
+    "query_format": "",
+    "embedding_dim": 768,
+    "kb_parquet": "ICD_Preprocess.parquet",
+    "kb_parquet_sha256": "763de671c8d8c2a9c462e718e83161ee9181a926b8f4956f0f9d8e108c595cf8",
+    "number_of_vectors": 12220,
+    "meta_rows": 12220,
+    "kb": "ICD10"
+}

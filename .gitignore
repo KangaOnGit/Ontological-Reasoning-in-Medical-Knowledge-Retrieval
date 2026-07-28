@@ -220,9 +220,12 @@ __marimo__/
 
 data/Curated data
 data/Round 1
+data/VectorDB/ICD
+data/VectorDB/RXNorm
+
 .env
 
 # Vector database
-#*.faiss
-#*.npy
-#*.parquet
+*.faiss
+*.npy
+*.parquet

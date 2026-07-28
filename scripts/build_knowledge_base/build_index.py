@@ -3,8 +3,8 @@ import logging
 from pathlib import Path
 
 from src.utils.config import load_config
-from src.rag.knowledge_base.indexing import build
-from src.rag.knowledge_base.text_encoder import TextEncoder
+from rag.indexing.faiss_indexing import build
+from rag.encoders.text_encoder import TextEncoder
 
 CONFIG = load_config(r"configs/KB/indexing.yaml")
 

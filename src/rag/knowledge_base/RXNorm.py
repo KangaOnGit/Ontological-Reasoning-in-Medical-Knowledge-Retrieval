@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 from src.utils.config import load_config
 
-CONFIG = load_config(r"configs/KB/RXNorm.yaml")
+CONFIG = load_config(r"configs/RAG/kb_sources/RXNorm.yaml")
 
 
 def default_raw():
