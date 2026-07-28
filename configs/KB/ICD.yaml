@@ -1,0 +1,11 @@
+data:
+    cat_code: "MÃ NHÓM BỆNH 3 KÝ TỰ"
+    cat_name: "TÊN NHÓM BỆNH 3 KÝ TỰ"
+    leaf_code: "MÃ BỆNH"
+    leaf_name: "TÊN BỆNH"
+
+input:
+    path: 'data\KB\ICD\ICD-10.xlsx'
+
+output:
+    path: 'data\KB\ICD\ICD_Preprocess.parquet'

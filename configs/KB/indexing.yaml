@@ -1,0 +1,20 @@
+input:
+  sources:
+    ICD10: data/KB/ICD/ICD_Preprocess.parquet
+    RXNorm: data/KB/RXNorm/RXNorm_Preprocess.parquet
+
+model:
+  name: SapBERT
+
+encoders:
+  SapBERT:
+    link: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+
+  E5:
+    link: intfloat/e5-large-v2
+
+  Qwen:
+    link: Qwen/Qwen3-Embedding-8B
+
+output:
+  path: data/KB/VectorDB

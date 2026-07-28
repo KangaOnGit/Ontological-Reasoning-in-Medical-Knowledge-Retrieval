@@ -1,0 +1,21 @@
+data:
+    keep_col: [
+        "rxcui", "lat", "ts", "lui", "stt", "sui", "ispref", "rxaui", "saui",
+        "scui", "sdui", "sab", "tty", "code", "str", "srl", "suppress", "cvf",
+    ]
+
+    keep_tty: {"IN", "PIN", "MIN", "SCDC", "SCD", "SBD"}
+
+    # Synonym Terms
+    syn_tty: {"SY", "PSN", "TMSY"}
+
+    pin_tty: {"PIN", "MIN"}
+
+    keep_sab: {"RXNORM"}
+
+input:
+    path_RRF: 'data\KB\RXNorm\RXNCONSO.RRF'
+    path_CSV: 'data\KB\RXNorm\RXNCONSO.csv'
+
+output:
+    path: 'data\KB\RXNorm\RXNorm_Preprocess.parquet'
