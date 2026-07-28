@@ -38,11 +38,11 @@ class KBIndex:
                     embedding_dim / kb_parquet_sha256 / number_of_vectors
                         for load-time checks.
         """
-        output = Path(output)
+        output = Path(output) / name
         
         output.mkdir(parents=True, exist_ok=True)
         faiss.write_index(self.index, str(output / f"{name}.faiss"))
-        self.metadata.to_parquet(output / f"{name}_meta.parquet", index=False)
+        self.metadata.to_parquet(output / f"{name}_metadata.parquet", index=False)
         
         meta = dict(encoder_meta)
         meta.setdefault("embedding_dim", self.index.d)
@@ -57,11 +57,13 @@ class KBIndex:
     def load(name: str, encoder, output: Path | str = CONFIG["output"]["path"],
                    check_dim: bool = True) -> "KBIndex":
         """
-        Load an Index and Validate it
+        Load the KB and Validate it.
+        Returns KBIndex Class
         """
+        output = Path(output)
 
         faiss_path = output / f"{name}.faiss"
-        metadata_path = output / f"{name}_meta.parquet"
+        metadata_path = output / f"{name}_metadata.parquet"
         idx_metadata_path = output / f"{name}.index.json"
         if not idx_metadata_path.exists():
             raise ValueError(
@@ -153,24 +155,34 @@ def build(kb: str, encoder:TextEncoder,
     else:
         raise ValueError(f"No id-like column found in parquet {parquet_path}."
                          "Expected one of ['id','code','rxcui']")
-    keep = ["id", "name"] + (["tty"] if "tty" in df.columns else [])
+    keep = ["id", "name"]
+    for c in [
+        "tty",
+        "alias_source",
+        "is_synonym",
+        "original_name"
+    ]:
+        if c in df.columns:
+            keep.append(c)
+            
     metadata = df.rename(columns={id_col: "id"})[keep].reset_index(drop=True)
     log.info("[%s/%s] embedding %d aliases", kb, tag, len(metadata))
     
+    # Embed all of the names
     embedding = encoder.encode_documents(
         metadata["name"].tolist(),
         verbose=True,)
         
     index = faiss.IndexFlatIP(embedding.shape[1])
     index.add(embedding)
-    ix = KBIndex(kb, index, metadata, encoder)
+    ix = KBIndex(kb, index, metadata, encoder) # Wrapper
     
     enc_meta = {
         "encoder_model": encoder.model_name,
         "pooling": encoder.pooling,
         "query_format": encoder.query_format,
         "embedding_dim": encoder.embedding_dim,
-        "kb_parquet": str(parquet_path),
+        "kb_parquet": parquet_path.name,
         "kb_parquet_sha256": sha256_file(parquet_path),
         "number_of_vectors": int(index.ntotal),
     }
