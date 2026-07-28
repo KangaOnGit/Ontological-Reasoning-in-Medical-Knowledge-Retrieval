@@ -218,10 +218,11 @@ __marimo__/
 .streamlit/secrets.toml
 
 
-data/
+data/Curated data
+data/Round 1
 .env
 
 # Vector database
-*.faiss
-*.npy
-*.parquet
+#*.faiss
+#*.npy
+#*.parquet
