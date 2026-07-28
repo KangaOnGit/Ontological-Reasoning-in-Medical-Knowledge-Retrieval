@@ -51,9 +51,9 @@ pip install -r requirements.txt
 The repository includes scripts to build ICD and RXNorm knowledge bases and then generate vector indexes.
 
 ```bash
-python -m scripts.build_knowledge_base.build_ICD
-python -m scripts.build_knowledge_base.build_RXNorm
-python -m scripts.build_knowledge_base.build_index
+python -m python -m scripts.build_rag.build_kb.build_ICD
+python -m python -m scripts.build_rag.build_kb..build_RXNorm
+python -m python -m scripts.build_rag.build_index.build_faiss_index
 ```
 
 These commands rely on the YAML files in [configs/KB](configs/KB) and write outputs under [data/KB](data/KB).

@@ -28,4 +28,4 @@ def main(argv=None):
 if __name__ == "__main__":
     main()
     
-# python -m scripts.build_knowledge_base.build_RXNorm [--args]
+# python -m scripts.build_rag.build_kb.build_RXNorm [--args]

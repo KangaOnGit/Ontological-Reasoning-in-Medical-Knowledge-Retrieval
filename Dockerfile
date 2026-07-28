@@ -22,8 +22,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . ./
 
 # Build Knowledge Base
-RUN python -m scripts.build_knowledge_base.build_ICD
-RUN python -m scripts.build_knowledge_base.build_RXNorm
-RUN python -m scripts.build_knowledge_base.build_index
+RUN python -m scripts.build_rag.build_kb.build_ICD
+RUN python -m scripts.build_rag.build_kb.build_RXNorm
+RUN python -m scripts.build_rag.build_index.build_faiss_index
 
 ENTRYPOINT ["python", "-m"]
