@@ -12,6 +12,7 @@ import pandas as pd
 
 from src.utils.config import load_config
 from src.rag.encoders.text_encoder import TextEncoder
+from src.rag.retriever.base import RetrievalResult
 
 CONFIG = load_config(r"configs/RAG/indexing/faiss_indexing.yaml")
 
@@ -72,7 +73,7 @@ class KBIndex:
             raise ValueError(
                 f"{name}: Missing '{idx_metadata_path.name} / {idx_metadata_path}' — the index has no trusted "
                 "metadata."
-            ) # data\KB\VectorDB\ICD10\ICD10.index.json
+            )
         info = json.loads(idx_metadata_path.read_text())
         index = faiss.read_index(str(faiss_path))
         metadata = pd.read_parquet(metadata_path)
@@ -135,7 +136,14 @@ class KBIndex:
                 continue
             row = self.metadata.iloc[int(j)]
             tty = str(row["tty"]) if has_tty else ""
-            out.append((str(row["id"]), str(row["name"]), float(s), tty))
+            out.append(
+                RetrievalResult(
+                    id=str(row["id"]),
+                    name=str(row["name"]),
+                    score=float(s),
+                    tty=tty,
+                )
+            )
         return out
 
 def sha256_file(path: Path) -> str:
