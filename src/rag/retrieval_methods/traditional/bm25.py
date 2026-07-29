@@ -6,11 +6,11 @@ from rank_bm25 import BM25Okapi
 
 from src.utils.config import load_config
 from src.rag.retrieval_methods.utils import clean_mention
+from src.rag.retrieval_methods.base_retriever import BaseRetriever
 
 CONFIG = load_config(r"configs/RAG/indexing/faiss_indexing.yaml")
 
-
-class BM25Index:
+class BM25Retriever(BaseRetriever):
     """BM25 index over KB aliases."""
 
     def __init__(
@@ -40,18 +40,12 @@ class BM25Index:
         """
         Return: [(ID, Name, Scores, TTY),...]
         """
-        
-
         tokens = clean_mention(mention, self.kb)
 
         scores = self.index.get_scores(tokens)
-
         top_idx = scores.argsort()[::-1][:top_k]
-
         has_tty = "tty" in self.metadata.columns
-
         out = []
-
         for i in top_idx:
             row = self.metadata.iloc[int(i)]
 
@@ -65,7 +59,6 @@ class BM25Index:
                     tty,
                 )
             )
-
         return out
     
 # python -m src.rag.retrieval_methods.traditional.bm25
