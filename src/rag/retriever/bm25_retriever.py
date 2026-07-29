@@ -21,12 +21,12 @@ class BM25Retriever(BaseRetriever):
         output: Path | str = CONFIG["output"]["path"],
     ):
         self.output = Path(output)
-        self.indices: dict[str, BM25Okapi] = {}
+        self.cache: dict[str, BM25Okapi] = {}
         self.metadata: dict[str, pd.DataFrame] = {}
         
     def get_index(self,
                   kb: str) -> BM25Okapi:
-        if kb not in self.indices:
+        if kb not in self.cache:
             log.info("Building BM25 for %s...", kb)
             
             metadata_path = self.output / kb / f"{kb}_metadata.parquet"
@@ -42,9 +42,9 @@ class BM25Retriever(BaseRetriever):
             
             log.info("Built BM25 for %s...", kb)
             
-            self.indices[kb] = BM25Okapi(documents)
+            self.cache[kb] = BM25Okapi(documents)
             
-        return self.indices[kb]
+        return self.cache[kb]
     
     def query(
         self,

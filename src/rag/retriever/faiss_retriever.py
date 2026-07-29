@@ -11,13 +11,13 @@ class FaissRetriever(BaseRetriever):
 
     def __init__(self, encoder):
         self.encoder = encoder
-        self.indices: dict[str, KBIndex] = {}
+        self.cache: dict[str, KBIndex] = {}
 
     def get_index(self, kb: str) -> KBIndex:
-        if kb not in self.indices:
+        if kb not in self.cache:
             log.info("Loading %s...", kb)
-            self.indices[kb] = KBIndex.load(kb, self.encoder)
-        return self.indices[kb]
+            self.cache[kb] = KBIndex.load(kb, self.encoder)
+        return self.cache[kb]
 
     def query(
         self,

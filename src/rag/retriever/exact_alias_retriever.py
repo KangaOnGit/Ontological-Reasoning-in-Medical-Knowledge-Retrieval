@@ -19,7 +19,7 @@ class ExactAliasRetriever(BaseRetriever):
         self,
         output: Path | str = CONFIG["output"]["path"],
     ):
-        self.indices: dict[str, defaultdict[str, list[RetrievalResult]]] = {}
+        self.cache: dict[str, dict[str, list[RetrievalResult]]] = {}
         self.output = Path(output)
 
     def get_index(
@@ -27,7 +27,7 @@ class ExactAliasRetriever(BaseRetriever):
         kb: str,
     ) -> defaultdict[str, list[RetrievalResult]]:
 
-        if kb not in self.indices:
+        if kb not in self.cache:
             log.info("Building Exact Alias for %s...", kb)
 
             metadata_path = self.output / kb / f"{kb}_metadata.parquet"
@@ -57,9 +57,9 @@ class ExactAliasRetriever(BaseRetriever):
 
             log.info("Built Exact Alias for %s.", kb)
 
-            self.indices[kb] = alias_dict
+            self.cache[kb] = alias_dict
 
-        return self.indices[kb]
+        return self.cache[kb]
 
     def query(
         self,
