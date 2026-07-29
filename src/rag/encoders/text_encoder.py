@@ -8,7 +8,6 @@ from src.utils.config import HF_TOKEN
 
 log = logging.getLogger(__name__)
 
-
 class TextEncoder:
     def __init__(
         self,

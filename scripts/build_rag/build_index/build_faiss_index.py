@@ -3,15 +3,16 @@ import logging
 from pathlib import Path
 
 from src.utils.config import load_config
-from rag.indexing.faiss_indexing import build
-from rag.encoders.text_encoder import TextEncoder
+from src.rag.indexing.faiss_indexing import build
+from src.rag.encoders.text_encoder import TextEncoder
 
-CONFIG = load_config(r"configs/KB/indexing.yaml")
+CONFIG = load_config(r"configs/RAG/indexing/faiss_indexing.yaml")
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s"
 )
+log = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -44,7 +45,7 @@ def main():
     sources = CONFIG["input"]["sources"]
 
     for kb, parquet_path in sources.items():
-        logging.info("Building %s...", kb)
+        log.info("Building %s...", kb)
 
         build(
             kb=kb,
@@ -54,7 +55,7 @@ def main():
             limit = args.limit,
         )
 
-    logging.info("Finished building all knowledge base indexes.")
+    log.info("Finished building all knowledge base indexes.")
 
 
 if __name__ == "__main__":

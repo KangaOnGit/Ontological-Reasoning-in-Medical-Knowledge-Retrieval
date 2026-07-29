@@ -1,3 +1,6 @@
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 import json
 import logging
 
@@ -8,7 +11,7 @@ import faiss
 import pandas as pd
 
 from src.utils.config import load_config
-from rag.encoders.text_encoder import TextEncoder
+from src.rag.encoders.text_encoder import TextEncoder
 
 CONFIG = load_config(r"configs/RAG/indexing/faiss_indexing.yaml")
 
@@ -62,14 +65,14 @@ class KBIndex:
         """
         output = Path(output)
 
-        faiss_path = output / f"{name}.faiss"
-        metadata_path = output / f"{name}_metadata.parquet"
-        idx_metadata_path = output / f"{name}.index.json"
+        faiss_path = output / name / f"{name}.faiss"
+        metadata_path =output / name / f"{name}_metadata.parquet"
+        idx_metadata_path = output / name / f"{name}.index.json"
         if not idx_metadata_path.exists():
             raise ValueError(
-                f"{name}: Missing '{idx_metadata_path.name}' — the index has no trusted "
+                f"{name}: Missing '{idx_metadata_path.name} / {idx_metadata_path}' — the index has no trusted "
                 "metadata."
-            )
+            ) # data\KB\VectorDB\ICD10\ICD10.index.json
         info = json.loads(idx_metadata_path.read_text())
         index = faiss.read_index(str(faiss_path))
         metadata = pd.read_parquet(metadata_path)
@@ -115,11 +118,19 @@ class KBIndex:
         if self.encoder is None:
             raise RuntimeError("KBIndex has no encoder; construct/load with one")
 
+        log.info("Encoding query")
+
         q = self.encoder.encode_queries([mention])
+        
+        
+        log.info("Searching FAISS")
         scores, idx = self.index.search(q, min(top_k, self.index.ntotal))
+        log.info("Search finished")
+        
         has_tty = "tty" in self.metadata.columns
         out = []
         for j, s in zip(idx[0], scores[0]):
+            log.info("Result %d score=%f", j, s)
             if j < 0:
                 continue
             row = self.metadata.iloc[int(j)]
