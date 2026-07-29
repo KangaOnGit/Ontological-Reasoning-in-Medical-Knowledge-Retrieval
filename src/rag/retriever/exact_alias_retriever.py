@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 
 CONFIG = load_config(r"configs/RAG/indexing/faiss_indexing.yaml")
 
-
 class ExactAliasRetriever(BaseRetriever):
 
     def __init__(
@@ -22,11 +21,22 @@ class ExactAliasRetriever(BaseRetriever):
         self.cache: dict[str, dict[str, list[RetrievalResult]]] = {}
         self.output = Path(output)
 
-    def get_index(
+    def get_kb(
         self,
         kb: str,
     ) -> defaultdict[str, list[RetrievalResult]]:
-
+        """
+        self.cache = {
+            "ICD": {
+                "alias1": [RetrievalResults (1), RetrievalResults (2),...]
+                ...
+                },
+                
+            "RXNorm": {...},
+            }
+            
+                (an alias can have multiple results due to normalization/cleaning)
+        """
         if kb not in self.cache:
             log.info("Building Exact Alias for %s...", kb)
 
@@ -41,7 +51,7 @@ class ExactAliasRetriever(BaseRetriever):
             has_tty = "tty" in metadata.columns
             for row in metadata.itertuples(index=False):
                 alias = clean_mention(row.name, kb)
-
+                
                 alias_dict[alias].append(
                     RetrievalResult(
                         id=str(row.id),
@@ -65,4 +75,4 @@ class ExactAliasRetriever(BaseRetriever):
     ) -> list[RetrievalResult]:
 
         query = clean_mention(mention, kb)
-        return self.get_index(kb).get(query, [])[:top_k]
+        return self.get_kb(kb).get(query, [])[:top_k]

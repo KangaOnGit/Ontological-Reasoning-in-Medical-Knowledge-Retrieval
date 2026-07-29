@@ -13,7 +13,14 @@ class FaissRetriever(BaseRetriever):
         self.encoder = encoder
         self.cache: dict[str, KBIndex] = {}
 
-    def get_index(self, kb: str) -> KBIndex:
+    def get_kb(self, kb: str) -> KBIndex:
+        """
+        self.cache = {
+            "ICD": KBIndex,
+            "RXNorm": KBIndex,
+            }
+                (see faiss_indexing.py for info on the class)
+        """
         if kb not in self.cache:
             log.info("Loading %s...", kb)
             self.cache[kb] = KBIndex.load(kb, self.encoder)
@@ -29,4 +36,4 @@ class FaissRetriever(BaseRetriever):
         Return the top-k FAISS retrieval results.
         """
         mention = clean_mention(mention, kb)
-        return self.get_index(kb).query(mention, top_k)
+        return self.get_kb(kb).query(mention, top_k)

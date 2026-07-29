@@ -24,8 +24,15 @@ class BM25Retriever(BaseRetriever):
         self.cache: dict[str, BM25Okapi] = {}
         self.metadata: dict[str, pd.DataFrame] = {}
         
-    def get_index(self,
+    def get_kb(self,
                   kb: str) -> BM25Okapi:
+        
+        """
+        self.cache = {
+            "ICD": BM25Okapi,
+            "RXNorm": BM25Okapi,
+            }
+        """
         if kb not in self.cache:
             log.info("Building BM25 for %s...", kb)
             
@@ -54,7 +61,7 @@ class BM25Retriever(BaseRetriever):
     ) -> list[RetrievalResult]:
 
         tokens = clean_mention(mention, kb).split()
-        scores = self.get_index(kb).get_scores(tokens)
+        scores = self.get_kb(kb).get_scores(tokens)
         top_idx = scores.argsort()[::-1][:top_k]
         has_tty = "tty" in self.metadata[kb].columns
         

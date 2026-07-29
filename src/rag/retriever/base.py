@@ -22,7 +22,7 @@ class BaseRetriever(ABC):
         ...
         
     @abstractmethod
-    def get_index(
+    def get_kb(
         self,
         kb: str,
     ):
