@@ -3,6 +3,13 @@ from dataclasses import dataclass
 from typing import List
 
 
+@dataclass(slots=True)
+class RetrievalResult:
+    id: str
+    name: str
+    score: float
+    tty: str = ""
+
 class BaseRetriever(ABC):
 
     @abstractmethod
@@ -20,10 +27,3 @@ class BaseRetriever(ABC):
         kb: str,
     ):
         ...
-        
-@dataclass(slots=True)
-class RetrievalResult:
-    id: str
-    name: str
-    score: float
-    tty: str = ""

@@ -9,7 +9,7 @@ DRUG = re.compile(
 
 DECIMAL_COMMA = re.compile(r"(\d),(\d)")
 UNIT_SPACING = re.compile(
-    r"\s*(mg|mcg|µg|ug|g|ml|iu|meq|mmol)\b",
+    r"(\d+(?:\.\d+)?)\s*(mg|mcg|µg|ug|g|ml|iu|meq|mmol)\b",
     re.IGNORECASE,
 )
 

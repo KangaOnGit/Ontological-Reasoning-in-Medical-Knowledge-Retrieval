@@ -36,13 +36,9 @@ class ExactAliasRetriever(BaseRetriever):
                 raise ValueError(
                     f"{kb}: Missing '{metadata_path.name} / {metadata_path}'"
                 )
-
             metadata = pd.read_parquet(metadata_path)
-
             alias_dict = defaultdict(list)
-
             has_tty = "tty" in metadata.columns
-
             for row in metadata.itertuples(index=False):
                 alias = clean_mention(row.name, kb)
 
