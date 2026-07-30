@@ -1,0 +1,7 @@
+data:
+  eval:
+    path: "data/Round 1/P2"
+
+
+output:
+  path: "outputs"
