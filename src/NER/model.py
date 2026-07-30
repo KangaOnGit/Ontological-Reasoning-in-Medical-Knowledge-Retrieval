@@ -119,7 +119,13 @@ class NERmodel:
 
     @staticmethod
     def parse_output(output: str) -> list[Span]:
+        log.info("========== PARSING OUTPUT ==========")
+        log.info(output)
 
+        if not output:
+            log.warning("EMPTY MODEL OUTPUT")
+            return []
+        
         if not output:
             return []
 
@@ -128,31 +134,6 @@ class NERmodel:
         for raw_line in output.splitlines():
             line = raw_line.strip()
 
-            if not line:
-                continue
-
-            line = re.sub(r"<think>.*?</think>", "", line, flags=re.IGNORECASE | re.DOTALL).strip()
-            line = re.sub(r"^```(?:json|text)?\s*|\s*```$", "", line).strip()
-            line = re.sub(r"^\s*[-*•]\s*", "", line)
-            line = re.sub(r"^\d+\.\s*", "", line)
-
-            if not line:
-                continue
-
-            if line.lower() in {"none", "no spans", "no span found", "không tìm thấy span nào"}:
-                continue
-
-            parts = [
-                part.strip()
-                for part in re.split(r"\s*\|\|\s*|\s*\|\s*", line, maxsplit=4)
-            ]
-
-            if len(parts) < 3:
-                log.warning("Skipping malformed output line: %s", raw_line)
-                continue
-
-            if len(parts) < 5:
-                parts = parts + [""] * (5 - len(parts))
 
             text, typ, section, subsection, context = parts[:5]
             if not text:
