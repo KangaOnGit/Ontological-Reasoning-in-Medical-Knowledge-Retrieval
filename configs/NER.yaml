@@ -1,5 +1,5 @@
 model:
-  name: ["Qwen3-8B", "Qwen3-4B-Instruct",]
+  name: ["Qwen3-4B-Instruct", "Qwen3-8B"]
 
 LLM:
   Qwen3-4B-Instruct:
