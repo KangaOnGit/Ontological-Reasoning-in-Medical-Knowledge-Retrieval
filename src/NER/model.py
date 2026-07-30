@@ -133,9 +133,22 @@ class NERmodel:
 
         for raw_line in output.splitlines():
             line = raw_line.strip()
+            if not line:
+                continue
+                
+            parts = [
+                p.strip()
+                for p in line.split("||", maxsplit=4)
+            ]
 
-
-            text, typ, section, subsection, context = parts[:5]
+            if len(parts) != 5:
+                log.warning(
+                    "Skipping malformed output line: %s",
+                    raw_line
+                )
+                continue
+            
+            text, typ, section, subsection, context = parts
             if not text:
                 log.warning("Skipping empty span line: %s", raw_line)
                 continue
