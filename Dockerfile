@@ -1,7 +1,6 @@
 FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1
-
 ENV PATH="/root/.local/bin:$PATH"
 
 WORKDIR /app
@@ -16,14 +15,15 @@ RUN apt-get update \
 
 COPY requirements.txt ./
 
-# Normal pip install for req, no cache
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . ./
+COPY . .
 
 # Build Knowledge Base
-RUN python -m scripts.build_rag.build_kb.build_ICD
-RUN python -m scripts.build_rag.build_kb.build_RXNorm
-RUN python -m scripts.build_rag.build_index.build_faiss_index
+RUN python -m scripts.rag.build_kb.build_ICD \
+    && python -m scripts.rag.build_kb.build_RXNorm \
+    && python -m scripts.rag.build_index.build_faiss
 
-ENTRYPOINT ["python", "-m"]
+ENTRYPOINT ["python", "-m", "scripts.submission"]
+
+CMD ["--output_dir", "outputs"]
