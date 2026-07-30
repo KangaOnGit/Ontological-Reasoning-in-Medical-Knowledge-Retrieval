@@ -81,11 +81,6 @@ def normalize_text(text: str) -> str:
     return re.sub(r"\s+", " ", text.strip().lower())
 
 
-def is_diagnosis_type(span_type: str) -> bool:
-    value = normalize_text(span_type)
-    return "chan doan" in value or "chẩn đoán" in value or "diagnosis" in value
-
-
 def rule_based_assertion(span: Span) -> list[str]:
     """Infer assertion labels from subsection first, then section/context."""
     candidates = []
@@ -229,14 +224,15 @@ def run_inference(args: argparse.Namespace) -> list[dict[str, Any]]:
                     continue
 
                 assertion = rule_based_assertion(span)
-                diagnosis = is_diagnosis_type(span.typ)
-
                 candidates: list[str] = []
-                if diagnosis:
-                    icd_results = retriever.query(span.text, "ICD", top_k=5)
-                    rxnorm_results = retriever.query(span.text, "RXNorm", top_k=5)
+                map_to_kb: dict[str, str] = {
+                    "CHẨN_ĐOÁN": "ICD10",
+                    "THUỐC": "RXNorm"
+                }
+                if span.typ in map_to_kb:
+                    results = retriever.query(span.text, map_to_kb[span.typ], top_k=5)
                     candidates = [
-                        item.id for item in icd_results + rxnorm_results if item.id
+                        item.id for item in results if item.id
                     ]
                     candidates = list(dict.fromkeys(candidates))
 
