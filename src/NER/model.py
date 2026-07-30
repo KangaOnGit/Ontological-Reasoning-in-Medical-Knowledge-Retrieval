@@ -119,7 +119,7 @@ class NERmodel:
             if not line:
                 continue
 
-            parts = [p.strip() for p in line.split("||", maxsplit=3)]
+            parts = [p.strip() for p in line.split("||", maxsplit=4)]
 
             if len(parts) != 4:
                 log.warning("Skipping malformed output line: %s", line)
@@ -128,9 +128,10 @@ class NERmodel:
             results.append(
                 Span(
                     text=parts[0],
-                    section=parts[1],
-                    subsection=parts[2],
-                    context=parts[3],
+                    type = parts[1]
+                    section=parts[2],
+                    subsection=parts[3],
+                    context=parts[4],
                 )
             )
 

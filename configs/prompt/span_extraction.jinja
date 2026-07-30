@@ -15,7 +15,7 @@ Sai sót do bỏ sót thực thể nghiêm trọng hơn sai sót do trích xuấ
 
 # SPAN CẦN TRÍCH XUẤT
 
-Bao gồm mọi chuỗi ký tự liên tiếp biểu diễn một khái niệm hoặc mô tả có ý nghĩa lâm sàng; bao gồm nhưng không giới hạn:
+Bao gồm các chuỗi ký tự liên tiếp biểu diễn một thực thể y khoa hoặc thông tin lâm sàng cụ thể. Bao gồm nhưng không giới hạn:
 
 - bệnh
 - chẩn đoán
@@ -26,8 +26,6 @@ Bao gồm mọi chuỗi ký tự liên tiếp biểu diễn một khái niệm h
 - hoạt chất
 - xét nghiệm
 - kết quả xét nghiệm
-- thủ thuật
-- cơ quan giải phẫu
 - chỉ số sinh học
 - thuật ngữ y khoa bằng tiếng Việt hoặc tiếng Anh
 - viết tắt y khoa (CBC, LDH, AVF, DES, GCS, CBC, CT, MRI, ECG, GCS, HbA1c, CRP, SpO2, ...)
@@ -266,6 +264,102 @@ Bệnh sử
 Kết quả
 
 ---
+QUAN TRỌNG:
+
+Việc phân loại không được ảnh hưởng đến việc trích xuất.
+
+Nếu một cụm có ý nghĩa lâm sàng nhưng không chắc chắn về loại,
+vẫn phải trích xuất và gán loại UNKNOWN.
+Không được bỏ qua span chỉ vì không xác định được loại.
+
+# PHÂN LOẠI SPAN
+
+Chỉ được sử dụng đúng các loại sau:
+- TRIỆU_CHỨNG
+- CHẨN_ĐOÁN
+- THUỐC
+- TÊN_XÉT_NGHIỆM
+- KẾT_QUẢ_XÉT_NGHIỆM
+- UNKNOWN
+
+Không được tạo loại mới.
+
+Sau khi xác định span, gán đúng một loại:
+
+## TRIỆU_CHỨNG
+Các biểu hiện bất thường mà bệnh nhân cảm nhận hoặc bác sĩ quan sát được.
+Bao gồm:
+- triệu chứng chủ quan
+- dấu hiệu lâm sàng
+
+Ví dụ:
+- đau ngực
+- khó thở
+- sốt
+- mất ngủ
+
+## CHẨN_ĐOÁN
+Tên bệnh, tình trạng bệnh lý hoặc kết luận y khoa.
+
+Ví dụ:
+- viêm phổi
+- rung nhĩ
+- đái tháo đường type 2
+
+## THUỐC
+Tên thuốc, hoạt chất, chế phẩm hoặc thông tin thuốc.
+
+Ví dụ:
+- metformin
+- amlodipine
+- aspirin
+
+## TÊN_XÉT_NGHIỆM
+Tên xét nghiệm, phép đo hoặc phương tiện đánh giá y khoa.
+
+Ví dụ:
+- HbA1c
+- công thức máu
+- điện tim
+- CT ngực
+
+## KẾT_QUẢ_XÉT_NGHIỆM
+Giá trị hoặc kết quả thu được từ xét nghiệm, đo lường hoặc chẩn đoán hình ảnh.
+
+Ví dụ:
+- 8.2%
+- 120 mg/dL
+- EF 45%
+- SpO2 92%
+
+Nếu không xác định được loại:
+UNKNOWN
+
+Nếu một câu chứa tên xét nghiệm/chỉ số và giá trị của nó,
+tách riêng tên xét nghiệm và giá trị.
+
+Ví dụ:
+
+Sai:
+HbA1c 8.2% || KẾT_QUẢ_XÉT_NGHIỆM
+
+Đúng:
+HbA1c || TÊN_XÉT_NGHIỆM
+8.2% || KẾT_QUẢ_XÉT_NGHIỆM
+
+Thông tin liều dùng, đường dùng, tần suất dùng đi kèm thuốc được giữ trong cùng span với thuốc.
+
+Ví dụ:
+
+Đúng:
+amlodipine 10 mg po daily
+
+Sai:
+amlodipine
+10 mg
+po daily
+
+---
 
 # SECTION, SUBSECTION VÀ CONTEXT
 
@@ -299,7 +393,14 @@ Context phải được giữ nguyên chính xác như trong văn bản, bao g�
 
 Mỗi dòng đúng một span theo định dạng:
 
-<span> || <section> || <subsection> || <context>
+span || type || section || subsection || context
+
+Ví dụ
+
+metformin || THUỐC || Đơn thuốc || None || Bệnh nhân dùng metformin 500mg mỗi ngày.
+đau ngực || TRIỆU_CHỨNG || Bệnh sử || None || Bệnh nhân xuất hiện đau ngực khi gắng sức.
+HbA1c || TÊN_XÉT_NGHIỆM || Xét nghiệm || None || HbA1c: 8.2%
+8.2% || KẾT_QUẢ_XÉT_NGHIỆM || Xét nghiệm || None || HbA1c: 8.2%
 
 Không đánh số.
 
