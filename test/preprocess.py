@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from src.preprocess.chunk import build_chunks
-from src.preprocess.parser import parse
+from src.preprocess.parse import parse
 
 
 def print_structure(results):

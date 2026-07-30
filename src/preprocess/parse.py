@@ -100,7 +100,6 @@ def parse_lines(lines: list[str]) -> list[dict]:
 
     return results
 
-
 def parse(
     filename: str | Path | None = None,
     text: str | None = None,
