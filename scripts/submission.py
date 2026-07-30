@@ -6,14 +6,10 @@ from argparse import BooleanOptionalAction
 import logging
 
 from src.utils.config import load_config
-from src.inference.pipeline import run_inference
+from src.inference.pipeline import InferencePipeline
 
 CONFIG_NER = load_config("configs/NER.yaml")
 CONFIG_SUBMISSION = load_config("configs/submission.yaml")
-ENTITY_TO_KB = {
-    "CHẨN_ĐOÁN": "ICD10",
-    "THUỐC": "RXNorm",
-}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -65,8 +61,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
-    args = parse_args()
-    results = run_inference(args)
+    submission_args = parse_args()
+    pipeline = InferencePipeline(submission_args)
+    results = pipeline.run_submission()
     log.info("Finished inference pipeline with %d extracted spans", len(results))
 
 
