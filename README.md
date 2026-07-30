@@ -143,16 +143,7 @@ Candidate normalization is evaluated using Jaccard similarity between predicted 
 
 The final candidate score is weighted by the number of candidate concepts in each sample:
 
-$$
-\mathrm{candidates\_score}
-=
-\frac{
-\left(\sum_i J_{\mathrm{candidates}}(i)\right)
-\left(\sum_k (|gt(k)|+1)\right)
-}{
-\sum_i \sum_k (|gt(k)|+1)
-}
-$$
+$$\mathrm{candidates\_score} = \frac{\left(\sum_i J_{\mathrm{candidates}}(i)\right)\left(\sum_k (|gt(k)|+1)\right)}{\sum_i \sum_k (|gt(k)|+1)}$$
 
 ---
 
