@@ -111,9 +111,7 @@ Concept extraction quality is measured using Word Error Rate (WER) over the extr
 The score is calculated as:
 
 $$
-text_score =
-\frac{1}{|test|}
-\sum_{i \in test}(1-WER(i))
+\mathrm{text\_score}=\frac{1}{|test|}\sum_{i\in test}(1-\mathrm{WER}(i))
 $$
 
 A lower WER corresponds to a higher text extraction score.
@@ -126,7 +124,9 @@ Assertion prediction is evaluated using Jaccard similarity between the predicted
 
 For each sample:
 
-$$J_{assertions}(i) = \frac{|GT \cap Prediction|} {|GT \cup Prediction|}$$
+$$
+J_{\mathrm{assertions}}(i)=\frac{|GT \cap Prediction|}{|GT \cup Prediction|}
+$$
 
 Special cases:
 
@@ -144,14 +144,13 @@ Candidate normalization is evaluated using Jaccard similarity between predicted 
 The final candidate score is weighted by the number of candidate concepts in each sample:
 
 $$
-candidates_score =
+\mathrm{candidates\_score}
+=
 \frac{
-\sum_i J_{candidates}(i)
-\cdot
-\sum_k(|gt(k)|+1)
-}
-{
-\sum_i \sum_k(|gt(k)|+1)
+\left(\sum_i J_{\mathrm{candidates}}(i)\right)
+\left(\sum_k (|gt(k)|+1)\right)
+}{
+\sum_i \sum_k (|gt(k)|+1)
 }
 $$
 
@@ -162,12 +161,7 @@ $$
 The final score combines all components:
 
 $$
-final_score =
-0.3 \cdot text_score
-+
-0.3 \cdot assertions_score
-+
-0.4 \cdot candidates_score
+\mathrm{final\_score}=0.3\cdot\mathrm{text\_score}+0.3\cdot\mathrm{assertions\_score}+0.4\cdot\mathrm{candidates\_score}
 $$
 
 Because candidate normalization contributes the largest weight, the retrieval and ranking components are designed to maximize ontology matching robustness while maintaining accurate extraction and assertion detection.
@@ -204,10 +198,13 @@ The retrieval module follows a multi-stage candidate generation and ranking fram
 Candidate scores from different retrieval methods are normalized before fusion:
 
 $$
-Score(c)=
-w_e\hat{S}_{alias}(c)+
-w_b\hat{S}_{BM25}(c)+
-w_f\hat{S}_{FAISS}(c)
+\mathrm{Score}(c)
+=
+w_e \hat{S}_{\mathrm{alias}}(c)
++
+w_b \hat{S}_{\mathrm{BM25}}(c)
++
+w_f \hat{S}_{\mathrm{FAISS}}(c)
 $$
 
 Exact matching improves precision for known medical expressions, while BM25 and FAISS improve recall for noisy, abbreviated, or semantically similar mentions.
