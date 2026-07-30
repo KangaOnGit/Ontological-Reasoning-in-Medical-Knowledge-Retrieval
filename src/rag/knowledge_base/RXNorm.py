@@ -90,6 +90,6 @@ def build(raw: Path = None,
                                                    "is_synonym", "original_name"]]
     out.parent.mkdir(parents=True, exist_ok=True)
     kept.to_parquet(out, index=False)
-    print(f"RXNorm: {len(kept):,} aliases / {kept['code'].nunique():,} rxcui/code -> {out}")
+    print(f"RXNorm PROCESSED: {len(kept):,} aliases / {kept['code'].nunique():,} rxcui/code -> {out}")
     print(kept["tty"].value_counts().to_string())
     return kept
