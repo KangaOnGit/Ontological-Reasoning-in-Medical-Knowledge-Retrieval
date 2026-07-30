@@ -5,7 +5,7 @@ data:
     leaf_name: "TÊN BỆNH"
 
 input:
-    path: 'data\KB\ICD\ICD-10.xlsx'
+    path: 'data/KB/ICD/ICD-10.xlsx'
 
 output:
-    path: 'data\KB\ICD\ICD_Preprocess.parquet'
+    path: 'data/KB/ICD/ICD_Preprocess.parquet'

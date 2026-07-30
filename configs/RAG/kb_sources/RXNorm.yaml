@@ -14,8 +14,8 @@ data:
     keep_sab: {"RXNORM"}
 
 input:
-    path_RRF: 'data\KB\RXNorm\RXNCONSO.RRF'
-    path_CSV: 'data\KB\RXNorm\RXNCONSO.csv'
+    path_RRF: 'data/KB/RXNorm/RXNCONSO.RRF'
+    path_CSV: 'data/KB/RXNorm/RXNCONSO.csv'
 
 output:
-    path: 'data\KB\RXNorm\RXNorm_Preprocess.parquet'
+    path: 'data/KB/RXNorm/RXNorm_Preprocess.parquet'
