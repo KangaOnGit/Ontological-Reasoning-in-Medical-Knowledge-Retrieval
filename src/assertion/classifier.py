@@ -3,13 +3,13 @@ import re
 from src.utils.config import load_config
 from src.NER.base import Span
 
+def normalize_rule_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text.strip().lower())
+
 ASSERTION_RULES = {
     label: [normalize_rule_text(p) for p in phrases]
     for label, phrases in load_config("configs/assertion.yaml")["labels"].items()
 }
-
-def normalize_rule_text(text: str) -> str:
-    return re.sub(r"\s+", " ", text.strip().lower())
 
 def rule_based_assertion(span: Span) -> list[str]:
     """Infer assertion labels from subsection first, then section/context."""
