@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 
 import torch
@@ -124,37 +125,48 @@ class NERmodel:
 
         results = []
 
-        for line in output.splitlines():
-
-            line = line.strip()
+        for raw_line in output.splitlines():
+            line = raw_line.strip()
 
             if not line:
                 continue
 
-            parts = [
-                p.strip()
-                for p in line.split("||", maxsplit=4)
-            ]
+            line = re.sub(r"<think>.*?</think>", "", line, flags=re.IGNORECASE | re.DOTALL).strip()
+            line = re.sub(r"^```(?:json|text)?\s*|\s*```$", "", line).strip()
+            line = re.sub(r"^\s*[-*•]\s*", "", line)
+            line = re.sub(r"^\d+\.\s*", "", line)
 
-            if len(parts) != 5:
-                log.warning(
-                    "Skipping malformed output line: %s",
-                    line
-                )
+            if not line:
                 continue
 
-            log.info(
-                "Parsed span: %s",
-                parts[0]
-            )
+            if line.lower() in {"none", "no spans", "no span found", "không tìm thấy span nào"}:
+                continue
 
+            parts = [
+                part.strip()
+                for part in re.split(r"\s*\|\|\s*|\s*\|\s*", line, maxsplit=4)
+            ]
+
+            if len(parts) < 3:
+                log.warning("Skipping malformed output line: %s", raw_line)
+                continue
+
+            if len(parts) < 5:
+                parts = parts + [""] * (5 - len(parts))
+
+            text, typ, section, subsection, context = parts[:5]
+            if not text:
+                log.warning("Skipping empty span line: %s", raw_line)
+                continue
+
+            log.info("Parsed span: %s", text)
             results.append(
                 Span(
-                    text=parts[0],
-                    typ=parts[1],
-                    section=parts[2],
-                    subsection=parts[3],
-                    context=parts[4],
+                    text=text,
+                    typ=typ,
+                    section=section,
+                    subsection=subsection,
+                    context=context,
                 )
             )
 
