@@ -1,4 +1,4 @@
-# Ontological Reasoning in Medical Knowledge Retrieval
+# Ontological Reasoning in Medical Knowledge Retrieval for Vietnamese Clinical Notes
 
 An end-to-end biomedical NLP pipeline for extracting medical concepts from Vietnamese clinical text and normalizing them against structured medical ontologies such as ICD-10 and RxNorm.
 
@@ -111,7 +111,7 @@ Concept extraction quality is measured using Word Error Rate (WER) over the extr
 The score is calculated as:
 
 $$
-text\_score =
+text_score =
 \frac{1}{|test|}
 \sum_{i \in test}(1-WER(i))
 $$
@@ -126,12 +126,7 @@ Assertion prediction is evaluated using Jaccard similarity between the predicted
 
 For each sample:
 
-$$
-J_{assertions}(i)
-=
-\frac{|GT \cap Prediction|}
-{|GT \cup Prediction|}
-$$
+$$J_{assertions}(i) = \frac{|GT \cap Prediction|} {|GT \cup Prediction|}$$
 
 Special cases:
 
@@ -149,14 +144,14 @@ Candidate normalization is evaluated using Jaccard similarity between predicted 
 The final candidate score is weighted by the number of candidate concepts in each sample:
 
 $$
-candidates\_score =
+candidates_score =
 \frac{
 \sum_i J_{candidates}(i)
 \cdot
-\sum_k(|ground\_truth(k)|+1)
+\sum_k(|gt(k)|+1)
 }
 {
-\sum_i \sum_k(|ground\_truth(k)|+1)
+\sum_i \sum_k(|gt(k)|+1)
 }
 $$
 
@@ -167,12 +162,12 @@ $$
 The final score combines all components:
 
 $$
-final\_score =
-0.3 \cdot text\_score
+final_score =
+0.3 \cdot text_score
 +
-0.3 \cdot assertions\_score
+0.3 \cdot assertions_score
 +
-0.4 \cdot candidates\_score
+0.4 \cdot candidates_score
 $$
 
 Because candidate normalization contributes the largest weight, the retrieval and ranking components are designed to maximize ontology matching robustness while maintaining accurate extraction and assertion detection.
@@ -339,7 +334,7 @@ This repository is intended for experimentation and research in biomedical NLP a
 ### RxNorm
 
 Source:
-[NLM RxNorm]
+[NLM RxNorm](https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html)
 
 Release:
 Current Prescribable Content Monthly Release - July 6, 2026
@@ -350,7 +345,7 @@ MD5:
 ### ICD-10 Vietnamese Extension
 
 Source:
-TT06/2026/TT-BYT ICD-10 Vietnamese catalog
+[TT06/2026/TT-BYT ICD-10 Vietnamese catalog](https://benhviensuoikhoang.com/kham-chua-benh/danh-muc-benh-icd-x/danh-muc-benh-icd-10.html)
 
 ## License
 
