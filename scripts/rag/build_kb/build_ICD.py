@@ -16,7 +16,7 @@ def parse_arg():
     
     return parser.parse_args()
 
-def main(argv=None):
+def main():
     args = parse_arg()
 
     df = build(Path(args.input))
@@ -28,5 +28,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main()
-    
-# python -m scripts.build_rag.build_kb.build_ICD [--args]

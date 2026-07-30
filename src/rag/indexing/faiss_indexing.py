@@ -67,7 +67,7 @@ class KBIndex:
         output = Path(output)
 
         faiss_path = output / name / f"{name}.faiss"
-        metadata_path =output / name / f"{name}_metadata.parquet"
+        metadata_path = output / name / f"{name}_metadata.parquet"
         idx_metadata_path = output / name / f"{name}.index.json"
         if not idx_metadata_path.exists():
             raise ValueError(

@@ -60,5 +60,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-# python -m scripts.build_rag.build_index.build_faiss_index [--args]

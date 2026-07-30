@@ -1,0 +1,9 @@
+model:
+  name: ["Qwen3-8B", "Qwen3-4B-Instruct",]
+
+LLM:
+  Qwen3-4B-Instruct:
+    link: Qwen/Qwen3-4B-Instruct-2507
+
+  Qwen3-8B:
+    link: Qwen/Qwen3-VL-8B
