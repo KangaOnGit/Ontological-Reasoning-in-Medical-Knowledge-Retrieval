@@ -78,7 +78,6 @@ CONFIG_INFER = load_config(r"configs/infer.yaml")
 
 def inference(
     ner_model,
-    cls_model,
     data_dir: Path = Path(CONFIG_INFER['data']['eval']['path']),
 ):
     files = sorted(data_dir.glob("*.txt"))

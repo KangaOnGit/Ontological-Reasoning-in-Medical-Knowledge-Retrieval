@@ -47,8 +47,11 @@ class NERmodel:
         self.device = next(self.model.parameters()).device
 
         prompt_path = Path(prompt_path)
+
         if not prompt_path.exists():
-            raise FileNotFoundError(f"Prompt file not found: {prompt_path}")
+            raise FileNotFoundError(
+                f"Prompt file not found: {prompt_path}"
+            )
 
         env = Environment(
             loader=FileSystemLoader(prompt_path.parent),
@@ -62,7 +65,9 @@ class NERmodel:
         log.info("Model loaded successfully.")
 
     def generate(self, text: str) -> str:
-        rendered_prompt = self.prompt_template.render(text=text)
+        rendered_prompt = self.prompt_template.render(
+            text=text
+        )
 
         messages = [
             {
@@ -100,7 +105,11 @@ class NERmodel:
                 pad_token_id=self.tokenizer.eos_token_id,
             )
 
-        response = outputs[0][inputs["input_ids"].shape[1]:]
+        response = outputs[
+            0
+        ][
+            inputs["input_ids"].shape[1]:
+        ]
 
         return self.tokenizer.decode(
             response,
@@ -109,26 +118,40 @@ class NERmodel:
 
     @staticmethod
     def parse_output(output: str) -> list[Span]:
+
         if not output:
             return []
 
-        results: list[Span] = []
+        results = []
 
         for line in output.splitlines():
+
             line = line.strip()
+
             if not line:
                 continue
 
-            parts = [p.strip() for p in line.split("||", maxsplit=4)]
+            parts = [
+                p.strip()
+                for p in line.split("||", maxsplit=4)
+            ]
 
-            if len(parts) != 4:
-                log.warning("Skipping malformed output line: %s", line)
+            if len(parts) != 5:
+                log.warning(
+                    "Skipping malformed output line: %s",
+                    line
+                )
                 continue
-            log.info(f"Processing: {line}")
+
+            log.info(
+                "Parsed span: %s",
+                parts[0]
+            )
+
             results.append(
                 Span(
                     text=parts[0],
-                    type = parts[1]
+                    typ=parts[1],
                     section=parts[2],
                     subsection=parts[3],
                     context=parts[4],
@@ -138,4 +161,6 @@ class NERmodel:
         return results
 
     def forward(self, ipt: str) -> list[Span]:
-        return self.parse_output(self.generate(ipt))
+        output = self.generate(ipt)
+
+        return self.parse_output(output)
