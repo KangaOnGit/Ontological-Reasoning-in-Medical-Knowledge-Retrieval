@@ -237,9 +237,9 @@ def build(raw: Path | None = None) -> pd.DataFrame:
 
     df = load(raw).drop_duplicates(subset=["code", "name"]).reset_index(drop=True)
 
-    out = raw.with_name("ICD_Processed.parquet")
-
+    out = Path(CONFIG["output"]["path"])
     out.parent.mkdir(parents=True, exist_ok=True)
+    
     df.to_parquet(out, index=False)
 
     print(
