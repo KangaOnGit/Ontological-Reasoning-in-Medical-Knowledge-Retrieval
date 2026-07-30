@@ -5,7 +5,7 @@ from pathlib import Path
 from src.rag.knowledge_base.ICD import build, default_raw
 from src.utils.config import load_config
 
-CONFIG = load_config(r"configs/KB/ICD.yaml")
+CONFIG = load_config(r"configs/RAG/kb_sources/ICD.yaml")
 
 def parse_arg():
     parser = argparse.ArgumentParser(description="Build ICD-10")

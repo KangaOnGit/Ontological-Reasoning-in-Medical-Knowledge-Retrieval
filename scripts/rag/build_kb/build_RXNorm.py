@@ -5,7 +5,7 @@ from pathlib import Path
 from src.rag.knowledge_base.RXNorm import default_raw, build
 from src.utils.config import load_config
 
-CONFIG = load_config(r"configs/KB/RXNorm.yaml")
+CONFIG = load_config(r"configs/RAG/kb_sources/RXNorm.yaml")
 
 def parse_arg():
     parser = argparse.ArgumentParser(description= "Build RXNorm")
