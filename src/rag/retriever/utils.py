@@ -13,7 +13,6 @@ UNIT_SPACING = re.compile(
     re.IGNORECASE,
 )
 
-
 def clean_mention(mention: str, kb: str) -> str:
     mention = unicodedata.normalize("NFKC", str(mention))
     mention = mention.lower()

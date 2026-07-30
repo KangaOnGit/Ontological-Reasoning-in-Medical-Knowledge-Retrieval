@@ -1,17 +1,15 @@
 from collections import defaultdict
+from src.preprocess.base import Chunk
 
-
-def build_chunks(results: list[dict]) -> list[str]:
-    """Group parsed text by (section, subsection) into LLM-ready chunks."""
-
+def build_chunks(results: list[dict]) -> list[Chunk]:
     groups = defaultdict(list)
 
     for item in results:
-        groups[tuple(item["path"])].append(item["text"])
+        groups[tuple(item["path"])].append(item)
 
     chunks = []
 
-    for (section, subsection), texts in groups.items():
+    for (section, subsection), records in groups.items():
         lines = []
 
         if section:
@@ -23,8 +21,13 @@ def build_chunks(results: list[dict]) -> list[str]:
         if lines:
             lines.append("")
 
-        lines.extend(texts)
+        lines.extend(record["text"] for record in records)
 
-        chunks.append("\n".join(lines))
+        chunks.append(
+            Chunk(
+                text="\n".join(lines),
+                records=records,
+            )
+        )
 
     return chunks

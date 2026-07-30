@@ -29,15 +29,18 @@ def add_result(
     text: str,
     section: str | None,
     subsection: str | None,
+    start: int,
+    end: int,
 ) -> None:
     """Append a parsed text span."""
     results.append(
         {
-            "text": text.strip(),
+            "text": text,
             "path": [section, subsection],
+            "start": start,
+            "end": end,
         }
     )
-
 
 def next_nonempty_type(lines: list[str], start: int) -> str | None:
     """Return the type of the next non-empty line."""
@@ -49,14 +52,26 @@ def next_nonempty_type(lines: list[str], start: int) -> str | None:
 
 
 def parse_lines(lines: list[str]) -> list[dict]:
-    """Parse already-split lines."""
+    """Parse already-split lines while preserving character offsets."""
 
     current_section = None
     current_subsection = None
     results = []
 
+    offset = 0
+
     for i, raw in enumerate(lines):
-        line = raw.strip()
+        raw_no_newline = raw.rstrip("\r\n")
+        line = raw_no_newline.strip()
+
+        # Character offsets of the stripped text
+        leading = len(raw_no_newline) - len(raw_no_newline.lstrip())
+        trailing = len(raw_no_newline) - len(raw_no_newline.rstrip())
+
+        start = offset + leading
+        end = offset + len(raw_no_newline) - trailing
+
+        offset += len(raw)
 
         if not line:
             continue
@@ -72,19 +87,38 @@ def parse_lines(lines: list[str]) -> list[dict]:
             current_subsection = title.strip()
 
             if rest and rest[0].strip():
+                value = rest[0].strip()
+
+                colon_pos = raw_no_newline.find(":")
+                value_start = offset - len(raw) + colon_pos + 1
+
+                while (
+                    value_start < offset
+                    and raw_no_newline[value_start - (offset - len(raw))].isspace()
+                ):
+                    value_start += 1
+
                 add_result(
                     results,
-                    rest[0],
+                    value,
                     current_section,
                     current_subsection,
+                    value_start,
+                    value_start + len(value),
                 )
 
         elif typ == "ITEM":
+            item = line.lstrip("-").strip()
+
+            item_start = raw_no_newline.find(item) + (offset - len(raw))
+
             add_result(
                 results,
-                line.lstrip("-").strip(),
+                item,
                 current_section,
                 current_subsection,
+                item_start,
+                item_start + len(item),
             )
 
         else:
@@ -96,6 +130,8 @@ def parse_lines(lines: list[str]) -> list[dict]:
                     line,
                     current_section,
                     current_subsection,
+                    start,
+                    end,
                 )
 
     return results
@@ -113,8 +149,8 @@ def parse(
         raise ValueError("Provide exactly one of 'filename' or 'text'.")
 
     if filename is not None:
-        lines = Path(filename).read_text(encoding="utf-8").splitlines()
-    else:
-        lines = text.splitlines()
+        text = Path(filename).read_text(encoding="utf-8")
+
+    lines = text.splitlines(keepends=True)
 
     return parse_lines(lines)

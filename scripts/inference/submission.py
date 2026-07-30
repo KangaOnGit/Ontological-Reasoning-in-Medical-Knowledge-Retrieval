@@ -3,26 +3,26 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import re
 import zipfile
 from pathlib import Path
 from typing import Any
 
-from src.NER.base import Span
 from src.NER.model import NERmodel
-from src.assertation.model import assert_cls
+from src.assertion.classifier import rule_based_assertion
 from src.preprocess.chunk import build_chunks
 from src.preprocess.parse import parse
 from src.rag.encoders.text_encoder import TextEncoder
-from src.rag.retriever.base import RetrievalResult
-from src.rag.retriever.bm25_retriever import BM25Retriever
-from src.rag.retriever.exact_alias_retriever import ExactAliasRetriever
-from src.rag.retriever.faiss_retriever import FaissRetriever
+from src.rag.retriever.hybrid_retriever import HybridRetriever
 from src.utils.config import load_config
+from src.postprocess.span_locator import locate_span_position
 
 CONFIG_NER = load_config("configs/NER.yaml")
-CONFIG_INFER = load_config("configs/infer.yaml")
+CONFIG_INFER = load_config("configs/inference.yaml")
 CONFIG_RAG = load_config("configs/RAG/indexing/faiss_indexing.yaml")
+ENTITY_TO_KB = {
+    "CHẨN_ĐOÁN": "ICD10",
+    "THUỐC": "RXNorm",
+}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -77,109 +77,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def normalize_text(text: str) -> str:
-    return re.sub(r"\s+", " ", text.strip().lower())
-
-
-def rule_based_assertion(span: Span) -> list[str]:
-    """Infer assertion labels from subsection first, then section/context."""
-    candidates = []
-
-    if span.subsection:
-        haystack = normalize_text(span.subsection)
-    else:
-        haystack = normalize_text(" ".join(
-            part for part in [span.section, span.context, span.text] if part
-        ))
-
-    for assertion_name in ("isHistorical", "isNegated", "isFamily"):
-        if any(phrase in haystack for phrase in assert_cls[assertion_name]):
-            candidates.append(assertion_name)
-
-    return candidates
-
-
-class HybridRetriever:
-    """Combine FAISS, BM25, and exact alias matching into a single ranked list."""
-
-    def __init__(self, kb: str, output_dir: str | Path):
-        self.kb = kb
-        self.output_dir = Path(output_dir)
-
-    def _build(self, mention: str, top_k: int = 5) -> list[RetrievalResult]:
-        raise NotImplementedError
-
-
-class HybridKnowledgeRetriever:
-    def __init__(self, encoder: TextEncoder, output_dir: str | Path):
-        self.faiss = FaissRetriever(encoder)
-        self.bm25 = BM25Retriever(output_dir)
-        self.exact = ExactAliasRetriever(output_dir)
-
-    def query(self, mention: str, kb: str, top_k: int = 5) -> list[RetrievalResult]:
-        if not mention:
-            return []
-
-        try:
-            faiss_results = self.faiss.query(mention, kb, top_k=top_k)
-        except Exception as exc:  # pragma: no cover - defensive fallback
-            log.warning("FAISS retrieval failed for %s: %s", kb, exc)
-            faiss_results = []
-
-        try:
-            bm25_results = self.bm25.query(mention, kb, top_k=top_k)
-        except Exception as exc:  # pragma: no cover - defensive fallback
-            log.warning("BM25 retrieval failed for %s: %s", kb, exc)
-            bm25_results = []
-
-        try:
-            exact_results = self.exact.query(mention, kb, top_k=top_k)
-        except Exception as exc:  # pragma: no cover - defensive fallback
-            log.warning("Exact alias retrieval failed for %s: %s", kb, exc)
-            exact_results = []
-
-        combined: dict[str, RetrievalResult] = {}
-
-        def add_result(results: list[RetrievalResult], weight: float) -> None:
-            for result in results:
-                entry = combined.setdefault(
-                    result.id,
-                    RetrievalResult(
-                        id=result.id,
-                        name=result.name,
-                        score=0.0,
-                        tty=result.tty,
-                    ),
-                )
-                entry.score += result.score * weight
-
-        add_result(faiss_results, 0.5)
-        add_result(bm25_results, 0.3)
-        add_result(exact_results, 0.2)
-
-        ranked = sorted(combined.values(), key=lambda item: item.score, reverse=True)
-        return ranked[:top_k]
-
-
-def locate_span_position(raw_text: str, span: Span) -> list[int]:
-    """Locate the span text in the original file content and return [start, end]."""
-    if not span.text:
-        return []
-
-    needle = span.text.strip()
-    if not needle:
-        return []
-
-    for candidate in (needle, re.sub(r"\s+", " ", needle)):
-        if not candidate:
-            continue
-        if candidate in raw_text:
-            start = raw_text.index(candidate)
-            return [start, start + len(candidate)]
-
-    return []
-
-
 def run_inference(args: argparse.Namespace) -> list[dict[str, Any]]:
     ner_model = NERmodel(
         model_name=CONFIG_NER["LLM"][args.model]["link"],
@@ -194,7 +91,7 @@ def run_inference(args: argparse.Namespace) -> list[dict[str, Any]]:
         max_length=32,
         batch_size=128,
     )
-    retriever = HybridKnowledgeRetriever(encoder, CONFIG_RAG["output"]["path"])
+    retriever = HybridRetriever(encoder, CONFIG_RAG["output"]["path"])
 
     input_dir = Path(args.input_dir)
     input_dir.mkdir(parents=True, exist_ok=True)
@@ -225,18 +122,18 @@ def run_inference(args: argparse.Namespace) -> list[dict[str, Any]]:
 
                 assertion = rule_based_assertion(span)
                 candidates: list[str] = []
-                map_to_kb: dict[str, str] = {
-                    "CHẨN_ĐOÁN": "ICD10",
-                    "THUỐC": "RXNorm"
-                }
-                if span.typ in map_to_kb:
-                    results = retriever.query(span.text, map_to_kb[span.typ], top_k=5)
+                kb = ENTITY_TO_KB.get(span.typ)
+                
+                if kb:
+                    retrieval_results = retriever.query(span.text, kb, top_k=5)
                     candidates = [
                         item.id for item in results if item.id
                     ]
-                    candidates = list(dict.fromkeys(candidates))
+                    candidates = list(
+                        dict.fromkeys(item.id for item in retrieval_results if item.id)
+                        )
 
-                position = locate_span_position(raw_text, span)
+                position = locate_span_position(span, chunk.records)
                 file_records.append(
                     {
                         "text": span.text,
