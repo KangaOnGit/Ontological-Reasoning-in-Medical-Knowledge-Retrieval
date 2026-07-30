@@ -7,14 +7,9 @@ faiss-cpu>=1.7,<2.0
 # Data / config
 numpy>=1.26,<3
 pandas>=2.0,<3
-pyarrow>=15,<17
 PyYAML>=6.0,<7
-openpyxl>=3.1
-
-# Env / tooling
+jinja2>=3.1,<4.0
 python-dotenv>=1.0
-huggingface-hub>=0.16.4
-tqdm>=4.65
 
-rank-bm25
-pytest
+# Retrieval
+rank-bm25>=0.2,<1.0
