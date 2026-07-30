@@ -188,15 +188,7 @@ The retrieval module follows a multi-stage candidate generation and ranking fram
 
 Candidate scores from different retrieval methods are normalized before fusion:
 
-$$
-\mathrm{Score}(c)
-=
-w_e \hat{S}_{\mathrm{alias}}(c)
-+
-w_b \hat{S}_{\mathrm{BM25}}(c)
-+
-w_f \hat{S}_{\mathrm{FAISS}}(c)
-$$
+$$\mathrm{Score}(c) = w_e \hat{S}_{\mathrm{alias}}(c) + w_b \hat{S}_{\mathrm{BM25}}(c) + w_f \hat{S}_{\mathrm{FAISS}}(c)$$
 
 Exact matching improves precision for known medical expressions, while BM25 and FAISS improve recall for noisy, abbreviated, or semantically similar mentions.
 
