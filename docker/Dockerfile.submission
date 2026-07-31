@@ -25,5 +25,4 @@ RUN python -m scripts.rag.build_kb.build_ICD \
     && python -m scripts.rag.build_index.build_faiss
 
 ENTRYPOINT ["python", "-m", "scripts.submission"]
-
 CMD ["--output_dir", "outputs"]
