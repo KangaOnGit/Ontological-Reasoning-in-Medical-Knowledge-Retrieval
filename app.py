@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import logging
-import os
 import tempfile
-from argparse import Namespace
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
@@ -27,7 +26,7 @@ pipeline: InferencePipeline | None = None
 
 def build_pipeline() -> InferencePipeline:
     return InferencePipeline(
-        ner_model="Qwen3-4B-Instruct"
+        ner_model=CONFIG_NER["model"]["default"]
         )
 
 @app.on_event("startup")
@@ -41,7 +40,10 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-async def run_prediction(text: str | None = None, file: UploadFile | None = None) -> dict[str, list[dict]]:
+async def run_prediction(
+    text: str | None = None,
+    file: UploadFile | None = None
+    ) -> dict[str, list[dict[str, Any]]]:
     if pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not initialized")
 
@@ -65,7 +67,7 @@ async def run_prediction(text: str | None = None, file: UploadFile | None = None
             input_path.write_bytes(contents)
 
             try:
-                results = pipeline.run_inference(input_path)
+                results = pipeline.run_file(input_path)
                 return results
             
             except Exception:
@@ -77,7 +79,7 @@ async def run_prediction(text: str | None = None, file: UploadFile | None = None
         raise HTTPException(status_code=400, detail="Either a .txt file or non-empty text input must be provided")
     
     try:
-        results = pipeline.run_inference(text)
+        results = pipeline.run_text(text)
         return results
     
     except Exception:
@@ -90,7 +92,7 @@ async def run_prediction(text: str | None = None, file: UploadFile | None = None
 async def predict(
     text: str = Form(default=""),
     file: UploadFile | None = File(default=None),
-) -> dict[str, list[dict]]:
+) -> dict[str, list[dict[str, Any]]]:
     return await run_prediction(text=text or None, file=file)
 
 if __name__ == "__main__":
