@@ -13,3 +13,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 def load_config(path):
     with open(PROJECT_ROOT / path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+    
+from huggingface_hub import scan_cache_dir
+print(scan_cache_dir())

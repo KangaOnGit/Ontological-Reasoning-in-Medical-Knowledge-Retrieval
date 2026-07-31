@@ -1,5 +1,5 @@
 model:
-  default: Qwen3-8B
+  default: Qwen3-4B-Instruct
 
 LLM:
   Qwen3-4B-Instruct:

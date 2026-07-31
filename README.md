@@ -4,7 +4,7 @@ An end-to-end biomedical NLP pipeline for extracting medical concepts from Vietn
 
 The system combines LLM-based medical entity extraction, assertion detection, ontology retrieval, and multi-stage ranking to transform noisy clinical narratives into standardized medical concepts.
 
-This project was developed for Viettel AI Race - Track 2: Medical Ontological Reasoning in Knowledge Retrieval
+This project was developed for [Viettel AI Race - Track 2: Medical Ontological Reasoning in Knowledge Retrieval](https://competition.viettel.vn/contests/medical-2026)
 
 The implementation emphasizes modularity and reproducibility, enabling each stage of the pipeline to be developed, evaluated, and replaced independently.
 
@@ -206,10 +206,9 @@ This ranking strategy combines deterministic matching with semantic retrieval, i
   
 - Text embedding model:
   - SapBERT
-  - Qwen-8B
   - E5
 
-All models are deployed locally without external API calls, enabling fully offline inference while satisfying the competition constraints.
+All models are deployed locally without external API calls, enabling fully offline inference while satisfying the competition constraints. The retrieval pipeline is model-agnostic and can be configured through YAML.
 
 ## Technical stack
 
@@ -219,6 +218,8 @@ All models are deployed locally without external API calls, enabling fully offli
 - Hugging Face model integration
 - YAML-based configuration
 - Pandas, NumPy, and PyYAML for data processing and orchestration
+- Docker
+- FastAPI
 
 ## Design Decisions
 
@@ -292,24 +293,23 @@ Default model settings and input/output paths are loaded from [configs/NER.yaml]
 
 ## Docker
 
-A Dockerfile is provided to simplify environment setup and ensure reproducible execution.
+A dedicated API Docker image is provided to simplify environment setup and expose the service through FastAPI.
 
-### Build the image
+### Build the API image
 
 ```bash
-docker build -t medical-ontology-retrieval .
+docker build -f docker/Dockerfile.api -t medical-ontology-retrieval-api .
 ```
 
-### Run the pipeline
+### Run the API service
 
 ```bash
-docker run --rm \
+docker run --rm -p 8000:8000 \
   -v $(pwd)/data:/app/data \
-  -v $(pwd)/outputs:/app/outputs \
-  medical-ontology-retrieval \
-  --input_dir "data/Round 1/P2" \
-  --output_dir outputs
+  medical-ontology-retrieval-api
 ```
+
+This container starts the FastAPI app with Uvicorn and exposes it on port `8000`.
 
 During the image build, the Dockerfile automatically:
 
@@ -317,13 +317,54 @@ During the image build, the Dockerfile automatically:
 * Builds the ICD-10 and RxNorm knowledge bases.
 * Constructs the FAISS index.
 
-The container entrypoint is configured to execute the submission pipeline:
+### FastAPI serving and deployment
+
+The service entrypoint is the FastAPI app in [app.py](app.py). For local or container-based deployment, start it with:
+
+```bash
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+The API provides a health endpoint and a prediction endpoint:
+
+```bash
+curl http://localhost:8000/health
+```
+
+#### Submit raw text
+
+```bash
+curl -X POST "http://localhost:8000/predict" \
+  -F "text=Khách hàng có tiền sử tăng huyết áp và đau ngực."
+```
+
+#### Submit a `.txt` file
+
+```bash
+curl -X POST "http://localhost:8000/predict" \
+  -F "file=@sample.txt"
+```
+
+The API accepts either:
+
+* a non-empty `text` form field, or
+* a single uploaded `.txt` file
+
+and returns the pipeline inference JSON payload for the selected text input.
+
+### Submission container
+
+A separate submission container is also available for batch CLI runs:
+
+```bash
+docker build -f docker/Dockerfile.submission -t medical-ontology-retrieval-submission .
+```
+
+It is configured to run the submission pipeline entrypoint:
 
 ```bash
 python -m scripts.submission
 ```
-
-Additional command-line arguments can be supplied when running the container and will be forwarded to the submission script.
 
 ## Configuration
 
@@ -342,25 +383,13 @@ Running the pipeline produces structured per-file submission records and a ZIP a
 
 ## Evaluation Limitations
 
-This repository contains the complete end-to-end pipeline developed for Viettel AI Race – Track 2. However, reproducing the official evaluation results is not possible because several aspects of the evaluation protocol were not publicly specified.
+This repository contains the complete end-to-end pipeline developed for Viettel AI Race – Track 2. However, reproducing the official evaluation results is not possible because several aspects of the evaluation protocol were not publicly specified:
 
-### Ontology Versions
+- the exact ICD-10 and RxNorm ontology versions
+- complete annotation guidelines
+- ontology candidate matching rules
 
-The competition did not disclose the exact ICD-10 and RxNorm releases used during evaluation. This repository therefore uses publicly available releases obtained from the official sources listed below. Differences between ontology versions may lead to different candidate retrieval results even when using the same retrieval methodology.
-
-### Candidate Matching
-
-The evaluation protocol does not specify what constitutes a valid ontology candidate. In practice, a clinical mention may legitimately correspond to multiple ICD-10 or RxNorm concepts depending on the specificity of the clinical documentation. Without explicit matching rules, it is difficult to determine whether semantically equivalent concepts should be considered correct during evaluation.
-
-### Assertion Annotation
-
-Based on the released examples, assertion annotations appear to contain at most a single assertion per entity. However, clinical entities may naturally satisfy multiple assertions simultaneously (for example, a condition can be both historical and part of the family history). The annotation guidelines do not explicitly describe how overlapping assertions should be handled.
-
-### Annotation Guidelines
-
-The released annotation guidelines do not fully specify how spans and assertion labels should be annotated in ambiguous clinical contexts. As a result, multiple reasonable interpretations may exist for the same clinical document, making exact reproduction of the official annotations difficult.
-
-These limitations affect the reproducibility of the official competition scores rather than the implementation itself. All components of the competition solution—including entity extraction, assertion detection, ontology retrieval, candidate ranking, and inference—are included in this repository.
+Consequently, retrieval scores may differ despite using the same methodology. assertion detection, ontology retrieval, candidate ranking, and inference—are included in this repository.
 
 ## Notes
 

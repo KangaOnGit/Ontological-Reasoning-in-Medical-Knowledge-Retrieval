@@ -88,8 +88,8 @@ async def run_prediction(
 
 @app.post("/predict")
 async def predict(
-    text: str = Form(default=""),
-    file: UploadFile | None = File(default=None),
+    text: str = Form(default=""), # Text Box
+    file: UploadFile | None = File(default=None), # File Input
 ) -> dict[str, list[dict[str, Any]]]:
     return await run_prediction(text=text or None, file=file)
 
