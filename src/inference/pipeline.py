@@ -28,17 +28,19 @@ log = logging.getLogger(__name__)
 
 class InferencePipeline:
     
-    def __init__(self, args: argparse.Namespace):
-        self.args = args
-        
-        log.info("Loading %s...", CONFIG_NER["LLM"][args.ner_model]["link"])
+    def __init__(self,
+                 ner_model: str,
+                 ):        
+
+        log.info("Loading %s...", model_cfg["link"])
+        model_cfg = CONFIG_NER["LLM"][ner_model]
         self.ner_model = NERmodel(
-            model_name=CONFIG_NER["LLM"][args.ner_model]["link"],
-            prompt_path=args.prompt_path,
-            max_new_tokens=args.max_new_tokens,
-            repetition_penalty=args.repetition_penalty,
+            model_name=model_cfg["link"],
+            prompt_path=model_cfg["prompt_path"],
+            max_new_tokens=model_cfg["max_new_tokens"],
+            repetition_penalty=model_cfg["repetition_penalty"],
         )
-        log.info("Loaded %s as the NER model successfully!", CONFIG_NER["LLM"][args.ner_model]["link"])
+        log.info("Loaded %s as the NER model successfully!", model_cfg["link"])
         
         log.info("Loading %s...", CONFIG_RAG["encoders"][CONFIG_RAG["model"]["name"]]["link"])
         self.encoder = TextEncoder(
@@ -71,7 +73,7 @@ class InferencePipeline:
                 if not span.text or not span.typ or span.typ == "UNKNOWN":
                     continue
             
-                log.info("Processing %s", span.text)
+                log.debug("Processing span: %s", span.text)
 
                 assertion = rule_based_assertion(span)
 
@@ -156,21 +158,24 @@ class InferencePipeline:
         finally:
             temp_path.unlink(missing_ok=True)
     
-    def run_submission(self) -> dict[str, list[dict[str, Any]]]:
-        input_dir = Path(self.args.input_dir)
+    def run_submission(self,
+                       input_dir: str | Path,
+                       output_dir: str | Path | None = None,
+                       ) -> dict[str, list[dict[str, Any]]]:
+        input_dir = Path(input_dir)
         if not input_dir.exists():
             raise FileNotFoundError(
                 f"Input directory does not exist: {input_dir}"
             )
 
-        output_dir = Path(self.args.output_dir) if self.args.output_dir else None
+        output_dir = Path(output_dir) if output_dir else None
         if output_dir:
             output_dir.mkdir(parents=True, exist_ok=True)
 
         submission_files: dict[str, list[dict[str, Any]]] = {}
 
         for path in sorted(input_dir.glob("*.txt")):
-            submission_files[path.stem] = self.run_single_file(path)
+            submission_files[path.stem] = self._run_single_file(path)
                 
         if output_dir:
             zip_path = write_submission_zip(

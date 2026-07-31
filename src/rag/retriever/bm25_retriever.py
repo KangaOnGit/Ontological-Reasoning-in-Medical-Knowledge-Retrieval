@@ -34,7 +34,6 @@ class BM25Retriever(BaseRetriever):
             }
         """
         if kb not in self.cache:
-            log.info("Building BM25 for %s...", kb)
             
             metadata_path = self.output / kb / f"{kb}_metadata.parquet"
             if not metadata_path.exists():
@@ -46,9 +45,7 @@ class BM25Retriever(BaseRetriever):
             documents = [
                 clean_mention(str(name), kb).split()
                 for name in self.metadata[kb]["name"]]
-            
-            log.info("Built BM25 for %s...", kb)
-            
+                        
             self.cache[kb] = BM25Okapi(documents)
             
         return self.cache[kb]

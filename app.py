@@ -7,7 +7,6 @@ from argparse import Namespace
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
 
 from src.inference.pipeline import InferencePipeline
 from src.utils.config import load_config
@@ -23,43 +22,38 @@ CONFIG_SUBMISSION = load_config("configs/submission.yaml")
 
 app = FastAPI(title="Medical Ontology Retrieval API")
 
-_pipeline: InferencePipeline | None = None
+pipeline: InferencePipeline | None = None
 
 
-def build_pipeline(input_dir: str) -> InferencePipeline:
-    ner_model_name = os.getenv("NER_MODEL", "Qwen3-8B")
+def build_pipeline() -> InferencePipeline:
     return InferencePipeline(
-        Namespace(
-            input_dir=input_dir,
-            ner_model=ner_model_name,
-            prompt_path="configs/prompt/span_extraction.jinja",
-            max_new_tokens=1024,
-            repetition_penalty=1.05,
-            output_dir=None,
+        ner_model="Qwen3-4B-Instruct"
         )
-    )
-
 
 @app.on_event("startup")
 def startup() -> None:
-    global _pipeline
-
-    default_input_dir = CONFIG_SUBMISSION["data"]["eval"]["path"]
-    _pipeline = build_pipeline(default_input_dir)
+    global pipeline
+    pipeline = build_pipeline()
     log.info("FastAPI service started and pipeline initialized.")
-
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-async def _run_prediction(text: str | None = None, file: UploadFile | None = None) -> JSONResponse:
-    if _pipeline is None:
+async def run_prediction(text: str | None = None, file: UploadFile | None = None) -> dict[str, list[dict]]:
+    if pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not initialized")
 
+    if file is not None and text is not None and text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Provide either text or a file, not both."
+        )
+
     if file is not None:
-        if not file.filename or not file.filename.endswith(".txt"):
+        if (not file.filename
+            or Path(file.filename).suffix.lower() != ".txt"):
             raise HTTPException(status_code=400, detail="Only .txt uploads are supported")
 
         contents = await file.read()
@@ -71,40 +65,33 @@ async def _run_prediction(text: str | None = None, file: UploadFile | None = Non
             input_path.write_bytes(contents)
 
             try:
-                results = _pipeline.run_inference(input_path)
-                return JSONResponse(content=results)
-            except Exception as exc:
+                results = pipeline.run_inference(input_path)
+                return results
+            
+            except Exception:
                 log.exception("Prediction failed")
-                raise HTTPException(status_code=500, detail=str(exc)) from exc
+                raise HTTPException(status_code=500,
+                                    detail="Internal server error.")
 
     if text is None or not text.strip():
         raise HTTPException(status_code=400, detail="Either a .txt file or non-empty text input must be provided")
-
+    
     try:
-        results = _pipeline.run_inference(text)
-        return JSONResponse(content=results)
-    except Exception as exc:
+        results = pipeline.run_inference(text)
+        return results
+    
+    except Exception:
         log.exception("Prediction failed")
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        raise HTTPException(status_code=500,
+                            detail="Internal server error.")
 
 
 @app.post("/predict")
 async def predict(
     text: str = Form(default=""),
     file: UploadFile | None = File(default=None),
-) -> JSONResponse:
-    return await _run_prediction(text=text or None, file=file)
-
-
-@app.post("/predict-from-text")
-async def predict_from_text(text: str = Form(...)) -> JSONResponse:
-    return await _run_prediction(text=text, file=None)
-
-
-@app.post("/predict-from-file")
-async def predict_from_file(file: UploadFile = File(...)) -> JSONResponse:
-    return await _run_prediction(text=None, file=file)
-
+) -> dict[str, list[dict]]:
+    return await run_prediction(text=text or None, file=file)
 
 if __name__ == "__main__":
     import uvicorn

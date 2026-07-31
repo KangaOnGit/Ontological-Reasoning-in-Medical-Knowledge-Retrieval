@@ -119,19 +119,17 @@ class KBIndex:
         if self.encoder is None:
             raise RuntimeError("KBIndex has no encoder; construct/load with one")
 
-        log.info("Encoding query")
+        log.debug("Encoding query")
 
         q = self.encoder.encode_queries([mention])
         
-        
-        log.info("Searching FAISS")
+        log.debug("Searching FAISS")
         scores, idx = self.index.search(q, min(top_k, self.index.ntotal))
-        log.info("Search finished")
         
         has_tty = "tty" in self.metadata.columns
         out = []
         for j, s in zip(idx[0], scores[0]):
-            log.info("Result %d score=%f", j, s)
+            log.debug("Result %d score=%f", j, s)
             if j < 0:
                 continue
             row = self.metadata.iloc[int(j)]

@@ -38,8 +38,6 @@ class ExactAliasRetriever(BaseRetriever):
                 (an alias can have multiple results due to normalization/cleaning)
         """
         if kb not in self.cache:
-            log.info("Building Exact Alias for %s...", kb)
-
             metadata_path = self.output / kb / f"{kb}_metadata.parquet"
 
             if not metadata_path.exists():
@@ -60,8 +58,6 @@ class ExactAliasRetriever(BaseRetriever):
                         tty=str(row.tty) if has_tty else "",
                     )
                 )
-
-            log.info("Built Exact Alias for %s.", kb)
 
             self.cache[kb] = alias_dict
 

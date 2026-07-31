@@ -29,8 +29,6 @@ class TextEncoder:
         self.max_length = max_length
         self.batch_size = batch_size
 
-        log.info("Loading model %s on %s", model_name, self.device)
-
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, token=HF_TOKEN)
         self.model = (
             AutoModel.from_pretrained(model_name, token=HF_TOKEN)

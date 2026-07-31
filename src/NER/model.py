@@ -63,8 +63,6 @@ class NERmodel:
 
         self.prompt_template = env.get_template(prompt_path.name)
 
-        log.info("Model loaded successfully.")
-
     def generate(self, text: str) -> str:
         rendered_prompt = self.prompt_template.render(
             text=text
@@ -119,9 +117,6 @@ class NERmodel:
 
     @staticmethod
     def parse_output(output: str) -> list[Span]:
-        log.info("========== PARSING OUTPUT ==========")
-        log.info(output)
-
         if not output:
             log.warning("EMPTY MODEL OUTPUT")
             return []
@@ -153,7 +148,6 @@ class NERmodel:
                 log.warning("Skipping empty span line: %s", raw_line)
                 continue
 
-            log.info("Parsed span: %s", text)
             results.append(
                 Span(
                     text=text,

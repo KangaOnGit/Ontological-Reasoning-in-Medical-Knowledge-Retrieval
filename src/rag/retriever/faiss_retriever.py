@@ -22,7 +22,6 @@ class FaissRetriever(BaseRetriever):
                 (see faiss_indexing.py for info on the class)
         """
         if kb not in self.cache:
-            log.info("Loading %s...", kb)
             self.cache[kb] = KBIndex.load(kb, self.encoder)
         return self.cache[kb]
 
