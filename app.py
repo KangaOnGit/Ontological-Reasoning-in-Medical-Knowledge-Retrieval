@@ -39,7 +39,6 @@ def startup() -> None:
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
-
 async def run_prediction(
     text: str | None = None,
     file: UploadFile | None = None
@@ -86,7 +85,6 @@ async def run_prediction(
         log.exception("Prediction failed")
         raise HTTPException(status_code=500,
                             detail="Internal server error.")
-
 
 @app.post("/predict")
 async def predict(
