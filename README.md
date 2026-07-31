@@ -4,7 +4,9 @@ An end-to-end biomedical NLP pipeline for extracting medical concepts from Vietn
 
 The system combines LLM-based medical entity extraction, assertion detection, ontology retrieval, and multi-stage ranking to transform noisy clinical narratives into standardized medical concepts.
 
-This project was developed for Viettel AI Race - Track 2: Medical Ontology for Medical Retrieval.
+This project was developed for Viettel AI Race - Track 2: Medical Ontological Reasoning in Knowledge Retrieval
+
+The implementation emphasizes modularity and reproducibility, enabling each stage of the pipeline to be developed, evaluated, and replaced independently.
 
 ## Highlights
 
@@ -27,15 +29,15 @@ Document Parser
 Section-aware Chunking
       |
       v
-Medical NER
-(LLM-based extraction)
+Medical Entity Extraction
+(LLM-based)
       |
       v
 Assertion Detection
       |
       v
 +---------------------------+
-| Ontology Retrieval        |
+| Candidate Retrieval        |
 |                           |
 | Exact Alias Matching      |
 | BM25 Sparse Retrieval     |
@@ -43,7 +45,9 @@ Assertion Detection
 +---------------------------+
       |
       v
-Weighted Score Fusion
+Candidate Ranking
+&
+Score Fusion
       |
       v
 ICD-10 / RxNorm Concept
@@ -159,14 +163,7 @@ Because candidate normalization contributes the largest weight, the retrieval an
 
 ## Results
 
-Benchmark results will be added after final evaluation.
-
-| Metric | Score |
-|---|---:|
-| Text Score | TBD |
-| Assertion Score | TBD |
-| Candidate Score | TBD |
-| Final Score | TBD |
+The competition evaluation protocol is not fully reproducible due to undisclosed ontology versions and annotation guidelines. Consequently, official benchmark scores are omitted from this repository. See Evaluation Limitations for details.
 
 ## Retrieval Architecture
 
@@ -201,6 +198,19 @@ where:
 
 This ranking strategy combines deterministic matching with semantic retrieval, improving robustness for noisy clinical text. 
 
+### Models
+
+- LLM-based NER (self-hosted):
+  - Qwen3-8B
+  - Qwen3-4B-Instruct-2507
+  
+- Text embedding model:
+  - SapBERT
+  - Qwen-8B
+  - E5
+
+The pipeline is designed for fully local inference without relying on external APIs. All models are deployed locally without external API calls to satisfy competition constraints.
+
 ## Technical stack
 
 - Python
@@ -210,26 +220,16 @@ This ranking strategy combines deterministic matching with semantic retrieval, i
 - YAML-based configuration
 - Pandas, NumPy, and PyYAML for data processing and orchestration
 
-### Models
-
-- LLM-based NER:
-  - Qwen3-8B (self-hosted)
-  
-- Text embedding model:
-  - SapBERT
-
-All models are deployed locally without external API calls to satisfy competition constraints.
-
 ## Design Decisions
 
 ### LLM-based Medical Entity Extraction
 
 
-Vietnamese clinical NLP resources remain limited, especially for mixed Vietnamese-English medical notes. A self-hosted LLM provides stronger adaptability for noisy real-world clinical language.
+Vietnamese clinical NLP resources remain limited, especially for mixed Vietnamese-English medical notes containing abbreviations, spelling variations, and inconsistent terminology. A self-hosted LLM provides greater robustness to these challenges than traditional sequence-labeling approaches while requiring minimal task-specific training data. The extraction component is designed to prioritize recall, allowing the downstream ontology retrieval and ranking stages to filter and normalize candidate concepts.
 
 ### Rule-based Assertion Detection
 
-Due to limited Vietnamese clinical assertion models, a lightweight rule-based classifier was implemented to identify negation and uncertainty patterns.
+Due to the limited availability of Vietnamese clinical assertion datasets and pretrained models, a lightweight rule-based classifier was implemented to identify negation, historical, and family-history assertions.
 
 ### Section-aware Document Parsing
 
@@ -304,6 +304,28 @@ Key configuration files include:
 ## Output Format
 
 Running the pipeline produces structured per-file submission records and a ZIP archive in the configured output directory.
+
+## Evaluation Limitations
+
+This repository reproduces the complete retrieval pipeline developed for the competition. However, reproducing the official evaluation results is not possible because several aspects of the evaluation protocol were not publicly specified.
+
+### Ontology Versions
+
+The competition did not disclose the exact ICD-10 and RxNorm releases used during evaluation. This repository therefore uses publicly available releases obtained from the official sources listed below. Differences between ontology versions may lead to different candidate retrieval results even when using the same retrieval methodology.
+
+### Candidate Matching
+
+The evaluation protocol does not specify what constitutes a valid ontology candidate. In practice, a clinical mention may legitimately correspond to multiple ICD-10 or RxNorm concepts depending on the specificity of the clinical documentation. Without explicit matching rules, it is difficult to determine whether semantically equivalent concepts should be considered correct during evaluation.
+
+### Assertion Annotation
+
+Based on the released examples, assertion annotations appear to contain at most a single assertion per entity. However, clinical entities may naturally satisfy multiple assertions simultaneously (for example, a condition can be both historical and part of the family history). The annotation guidelines do not explicitly describe how overlapping assertions should be handled.
+
+### Annotation Guidelines
+
+The released annotation guidelines do not fully specify how spans and assertion labels should be annotated in ambiguous clinical contexts. As a result, multiple reasonable interpretations may exist for the same clinical document, making exact reproduction of the official annotations difficult.
+
+These limitations affect the reproducibility of the official competition scores rather than the implementation of the retrieval pipeline presented in this repository. Despite these limitations, the repository faithfully implements the retrieval architecture, knowledge-base construction, and end-to-end inference pipeline used throughout the competition.
 
 ## Notes
 
