@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +55,106 @@ class InferencePipeline:
             CONFIG_RAG["output"]["path"],
         )
         log.info("Loaded HybridRetriever successfully!")
+
+    def _run_single_file(self, path: Path) -> list[dict[str, Any]]:
+        log.info("Processing %s", path.name)
+
+        parsed = parse(path)
+        chunks = build_chunks(parsed)
+
+        file_records: list[dict[str, Any]] = []
+
+        for chunk in chunks:
+            spans = self.ner_model.forward(chunk.text)
+
+            for span in spans:
+                if not span.text or not span.typ or span.typ == "UNKNOWN":
+                    continue
+            
+                log.info("Processing %s", span.text)
+
+                assertion = rule_based_assertion(span)
+
+                candidates: list[str] = []
+
+                kb = ENTITY_TO_KB.get(span.typ)
+                if kb:
+                    retrieval_results = self.retriever.query(
+                        span.text,
+                        kb,
+                        top_k=5,
+                    )
+
+                    candidates = list(
+                        dict.fromkeys(
+                            item.id
+                            for item in retrieval_results
+                            if item.id
+                        )
+                    )
+
+                record = {
+                    "text": span.text,
+                    "type": span.typ,
+                    "candidates": candidates,
+                    "assertions": assertion,
+                    "position": locate_span_position(
+                        span,
+                        chunk.records,
+                    ),
+                }
+                file_records.append(record)
+
+        log.info(
+            "Collected %d records from %s",
+            len(file_records),
+            path.name,
+        )
+
+        return file_records
+
+    def run_inference(self, input_source: str | Path) -> dict[str, list[dict[str, Any]]]:
+        """Run inference on either a .txt file, a directory of .txt files, or raw text.
+
+        Returns the same JSON-like structure as run_submission:
+        {
+            "filename": [record, ...]
+        }
+        """
+        input_path = Path(input_source)
+
+        if input_path.exists():
+            if input_path.is_dir():
+                txt_files = sorted(input_path.glob("*.txt"))
+                if not txt_files:
+                    raise FileNotFoundError(
+                        f"No .txt files were found in the input directory: {input_path}"
+                    )
+                return {
+                    path.stem: self._run_single_file(path)
+                    for path in txt_files
+                }
+
+            if input_path.is_file():
+                if input_path.suffix.lower() != ".txt":
+                    raise ValueError(
+                        f"Only .txt files are supported for file-based inference: {input_path}"
+                    )
+                return {input_path.stem: self._run_single_file(input_path)}
+
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".txt",
+            delete=False,
+            encoding="utf-8",
+        ) as handle:
+            handle.write(str(input_source))
+            temp_path = Path(handle.name)
+
+        try:
+            return {"input": self._run_single_file(temp_path)}
+        finally:
+            temp_path.unlink(missing_ok=True)
     
     def run_submission(self) -> dict[str, list[dict[str, Any]]]:
         input_dir = Path(self.args.input_dir)
@@ -69,61 +170,7 @@ class InferencePipeline:
         submission_files: dict[str, list[dict[str, Any]]] = {}
 
         for path in sorted(input_dir.glob("*.txt")):
-            
-            log.info("Processing %s", path.name)
-
-            parsed = parse(path)
-            chunks = build_chunks(parsed)
-
-            file_records: list[dict[str, Any]] = []
-
-            for chunk in chunks:
-                spans = self.ner_model.forward(chunk.text)
-
-                for span in spans:
-                    if not span.text or not span.typ:
-                        continue
-
-                    assertion = rule_based_assertion(span)
-
-                    candidates: list[str] = []
-
-                    kb = ENTITY_TO_KB.get(span.typ)
-                    if kb:
-                        retrieval_results = self.retriever.query(
-                            span.text,
-                            kb,
-                            top_k=5,
-                        )
-                        
-                        # Remove dupes
-                        candidates = list(
-                            dict.fromkeys(
-                                item.id
-                                for item in retrieval_results
-                                if item.id
-                            )
-                        )
-
-                    record = {
-                        "text": span.text,
-                        "type": span.typ,
-                        "candidates": candidates,
-                        "assertions": assertion,
-                        "position": locate_span_position(
-                            span,
-                            chunk.records,
-                        ),
-                    }
-                    file_records.append(record)
-                    
-            submission_files[path.stem] = file_records
-
-            log.info(
-                "Collected %d records from %s",
-                len(file_records),
-                path.name,
-            )
+            submission_files[path.stem] = self.run_single_file(path)
                 
         if output_dir:
             zip_path = write_submission_zip(

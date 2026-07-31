@@ -11,10 +11,13 @@ log = logging.getLogger(__name__)
 
 
 class HybridRetriever:
-    def __init__(self, encoder: TextEncoder, output_dir: str | Path):
+    def __init__(self, encoder: TextEncoder,
+                 output_dir: str | Path,
+                 k: float | 60.00):
         self.faiss = FaissRetriever(encoder)
         self.bm25 = BM25Retriever(output_dir)
         self.exact = ExactAliasRetriever(output_dir)
+        self.k = k
 
     def query(self, mention: str, kb: str, top_k: int = 5) -> list[RetrievalResult]:
         if not mention:
@@ -41,7 +44,8 @@ class HybridRetriever:
         combined: dict[str, RetrievalResult] = {}
 
         def add_result(results: list[RetrievalResult], weight: float) -> None:
-            for result in results:
+            # results is already sorted by highest score
+            for idx, result in enumerate(results):
                 # entry = combined[result.id]
                 entry = combined.setdefault( # Keeps first object inserted
                     result.id,
@@ -52,11 +56,12 @@ class HybridRetriever:
                         tty=result.tty,
                     ),
                 )
-                entry.score += result.score * weight
+                # Reciprocal Rank Fusion
+                entry.score += 1/(self.k + idx + 1) * weight
 
-        add_result(faiss_results, 0.5)
-        add_result(bm25_results, 0.3)
-        add_result(exact_results, 0.2)
+        add_result(faiss_results, 0.25)
+        add_result(bm25_results, 0.25)
+        add_result(exact_results, 0.5)
 
         ranked = sorted(combined.values(), key=lambda item: item.score, reverse=True)
         return ranked[:top_k]
