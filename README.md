@@ -290,6 +290,41 @@ python scripts/submission.py --input_dir "data/Round 1/P2" --output_dir outputs
 
 Default model settings and input/output paths are loaded from [configs/NER.yaml](configs/NER.yaml) and [configs/submission.yaml](configs/submission.yaml).
 
+## Docker
+
+A Dockerfile is provided to simplify environment setup and ensure reproducible execution.
+
+### Build the image
+
+```bash
+docker build -t medical-ontology-retrieval .
+```
+
+### Run the pipeline
+
+```bash
+docker run --rm \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/outputs:/app/outputs \
+  medical-ontology-retrieval \
+  --input_dir "data/Round 1/P2" \
+  --output_dir outputs
+```
+
+During the image build, the Dockerfile automatically:
+
+* Installs all Python dependencies.
+* Builds the ICD-10 and RxNorm knowledge bases.
+* Constructs the FAISS index.
+
+The container entrypoint is configured to execute the submission pipeline:
+
+```bash
+python -m scripts.submission
+```
+
+Additional command-line arguments can be supplied when running the container and will be forwarded to the submission script.
+
 ## Configuration
 
 Key configuration files include:
