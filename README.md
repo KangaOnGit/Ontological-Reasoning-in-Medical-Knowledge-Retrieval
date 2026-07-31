@@ -163,7 +163,7 @@ Because candidate normalization contributes the largest weight, the retrieval an
 
 ## Results
 
-Official benchmark scores are omitted because parts of the competition evaluation protocol—including ontology versions and annotation guidelines—were not publicly disclosed. See Evaluation Limitations for details.
+Official benchmark scores are omitted because parts of the competition evaluation protocol, including ontology versions and annotation guidelines, were not publicly disclosed. See Evaluation Limitations for details.
 
 ## Retrieval Architecture
 
