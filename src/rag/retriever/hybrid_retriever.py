@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class HybridRetriever:
     def __init__(self, encoder: TextEncoder,
                  output_dir: str | Path,
-                 k: float | 60.00):
+                 k: float | int = 60):
         self.faiss = FaissRetriever(encoder)
         self.bm25 = BM25Retriever(output_dir)
         self.exact = ExactAliasRetriever(output_dir)
