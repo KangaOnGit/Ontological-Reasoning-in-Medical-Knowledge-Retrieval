@@ -80,7 +80,7 @@ The system consists of five major stages:
 
 ### 2. Medical Entity Extraction
 
-- Extract medical mentions from clinical text using an LLM-based NER component
+- Extract medical concepts from clinical text using a locally deployed LLM.
 - Supports Vietnamese-English mixed medical terminology
 
 ### 3. Assertion Classification
@@ -163,7 +163,7 @@ Because candidate normalization contributes the largest weight, the retrieval an
 
 ## Results
 
-The competition evaluation protocol is not fully reproducible due to undisclosed ontology versions and annotation guidelines. Consequently, official benchmark scores are omitted from this repository. See Evaluation Limitations for details.
+Official benchmark scores are omitted because parts of the competition evaluation protocol—including ontology versions and annotation guidelines—were not publicly disclosed. See Evaluation Limitations for details.
 
 ## Retrieval Architecture
 
@@ -209,7 +209,7 @@ This ranking strategy combines deterministic matching with semantic retrieval, i
   - Qwen-8B
   - E5
 
-The pipeline is designed for fully local inference without relying on external APIs. All models are deployed locally without external API calls to satisfy competition constraints.
+All models are deployed locally without external API calls, enabling fully offline inference while satisfying the competition constraints.
 
 ## Technical stack
 
@@ -342,7 +342,7 @@ Running the pipeline produces structured per-file submission records and a ZIP a
 
 ## Evaluation Limitations
 
-This repository reproduces the complete retrieval pipeline developed for the competition. However, reproducing the official evaluation results is not possible because several aspects of the evaluation protocol were not publicly specified.
+This repository contains the complete end-to-end pipeline developed for Viettel AI Race – Track 2. However, reproducing the official evaluation results is not possible because several aspects of the evaluation protocol were not publicly specified.
 
 ### Ontology Versions
 
@@ -360,7 +360,7 @@ Based on the released examples, assertion annotations appear to contain at most 
 
 The released annotation guidelines do not fully specify how spans and assertion labels should be annotated in ambiguous clinical contexts. As a result, multiple reasonable interpretations may exist for the same clinical document, making exact reproduction of the official annotations difficult.
 
-These limitations affect the reproducibility of the official competition scores rather than the implementation of the retrieval pipeline presented in this repository. Despite these limitations, the repository faithfully implements the retrieval architecture, knowledge-base construction, and end-to-end inference pipeline used throughout the competition.
+These limitations affect the reproducibility of the official competition scores rather than the implementation itself. All components of the competition solution—including entity extraction, assertion detection, ontology retrieval, candidate ranking, and inference—are included in this repository.
 
 ## Notes
 
