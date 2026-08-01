@@ -20,8 +20,8 @@ The implementation emphasizes modularity and reproducibility, enabling each stag
 ## System Architecture
 
 <p align="center">
-<img src="images\Ontological_Pipeline.png" width="700"><br>
-<b>Figure 1.</b> System Architecture.
+  <img src="images\Ontological_Pipeline.png" width="1000" height="500"><br>
+  <b>Figure 1.</b> System Architecture.
 </p>
 
 ## Problem Statement
