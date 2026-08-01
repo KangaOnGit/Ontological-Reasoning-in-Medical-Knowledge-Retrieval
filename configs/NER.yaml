@@ -1,6 +1,6 @@
-model:
+default:
   type: GLINER
-  default: multi-v2.1
+  model: multi-v2.1
 
 LLM:
   Qwen3-4B-Instruct:

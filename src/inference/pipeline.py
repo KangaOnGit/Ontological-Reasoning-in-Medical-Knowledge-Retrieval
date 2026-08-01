@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from src.NER.llm import NERmodel
+from src.NER.builder import build_ner
 from src.assertion.classifier import rule_based_assertion
 from src.inference.writer import write_submission_zip
 from src.postprocess.span_locator import locate_span_position
@@ -15,7 +15,6 @@ from src.rag.encoders.text_encoder import TextEncoder
 from src.rag.retriever.hybrid_retriever import HybridRetriever
 from src.utils.config import load_config
 
-CONFIG_NER = load_config("configs/NER.yaml")
 CONFIG_RAG = load_config("configs/RAG/indexing/faiss_indexing.yaml")
 
 ENTITY_TO_KB = {
@@ -29,18 +28,24 @@ log = logging.getLogger(__name__)
 class InferencePipeline:
 
     def __init__(self,
-                 ner_model: str
+                ner_type: str,
+                ner_model: str,
                  ):
         # ------
-        model_cfg = CONFIG_NER["LLM"][ner_model]
-        log.info("Loading %s...", model_cfg["link"])
-        self.ner_model = NERmodel(
-            model_name=model_cfg["link"],
-            prompt_path=model_cfg["prompt_path"],
-            max_new_tokens=model_cfg["max_new_tokens"],
-            repetition_penalty=model_cfg["repetition_penalty"],
+        log.info(
+            "Loading %s model '%s'...",
+            ner_type,
+            ner_model,
+            )
+        self.ner_model = build_ner(
+            ner_type=ner_type,
+            ner_model=ner_model,
         )
-        log.info("Loaded %s successfully.", model_cfg["link"])
+        log.info(
+            "Loaded %s (%s) successfully.",
+            ner_model,
+            ner_type,
+        )
         # ------
         encoder_cfg = CONFIG_RAG["encoders"][CONFIG_RAG["model"]["name"]]
         log.info("Loading %s...", encoder_cfg["link"])

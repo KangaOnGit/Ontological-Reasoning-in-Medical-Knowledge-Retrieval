@@ -27,19 +27,26 @@ def parse_args() -> argparse.Namespace:
         default=CONFIG_SUBMISSION["data"]["eval"]["path"],
         help="Directory containing input .txt files",
     )
-
+    
     parser.add_argument(
         "--output_dir",
         type=str,
         default=CONFIG_SUBMISSION["output"]["path"],
         help="Directory that will receive the submission ZIP",
     )
+    
+    parser.add_argument(
+        "--ner_type",
+        type=str,
+        default=CONFIG_NER["default"]["type"],
+        choices=[k for k in CONFIG_NER if k != "default"],
+        help="NER backend defined in configs/NER.yaml",
+    )
 
     parser.add_argument(
         "--ner_model",
         type=str,
-        default=CONFIG_NER["model"]["default"],
-        choices=CONFIG_NER["LLM"].keys(),
+        default=CONFIG_NER["default"]["model"],
         help="NER model defined in configs/NER.yaml",
     )
 
@@ -49,10 +56,19 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
+    available_models = CONFIG_NER[args.ner_type]
+
+    if args.ner_model not in available_models:
+        raise ValueError(
+            f"'{args.ner_model}' is not a valid {args.ner_type} model. "
+            f"Available models: {list(available_models)}"
+        )
+        
     pipeline = InferencePipeline(
+        ner_type=args.ner_type,
         ner_model=args.ner_model,
     )
-
+    
     results = pipeline.run_submission(
         input_dir=args.input_dir,
         output_dir=args.output_dir,)

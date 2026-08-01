@@ -26,7 +26,8 @@ pipeline: InferencePipeline | None = None
 
 def build_pipeline() -> InferencePipeline:
     return InferencePipeline(
-        ner_model=CONFIG_NER["model"]["default"]
+        ner_model=CONFIG_NER["default"]["model"],
+        ner_type=CONFIG_NER["default"]["type"]
         )
 
 @app.on_event("startup")
