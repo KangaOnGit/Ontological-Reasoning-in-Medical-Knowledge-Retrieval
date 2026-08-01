@@ -11,7 +11,7 @@ def locate_span_position(span: Span, chunk: Chunk) -> list[int]:
         chunk.records,
         chunk.record_offsets,
     ):
-        chunk_end = chunk_start + len(record["text"])
+        chunk_end = chunk_start + len(record.text)
 
         if (
             span.start >= chunk_start
@@ -20,9 +20,9 @@ def locate_span_position(span: Span, chunk: Chunk) -> list[int]:
             local_start = span.start - chunk_start
             local_end = span.end - chunk_start
 
-            return [
-                record["start"] + local_start,
-                record["start"] + local_end,
+            return [ # Assumes every predicted span is fully contained within a single ParsedRecord.
+                record.start + local_start,
+                record.start + local_end,
             ]
-
+            
     return []

@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from src.preprocess.base import ParsedRecord
 
 SECTION_RE = re.compile(r"^\s*\d+\.\s*(.+)$")
 ITEM_RE = re.compile(r"^\s*-\s+")
@@ -25,7 +26,7 @@ def classify(line: str) -> str:
 
 
 def add_result(
-    results: list[dict],
+    results: list[ParsedRecord],
     text: str,
     section: str | None,
     subsection: str | None,
@@ -34,12 +35,12 @@ def add_result(
 ) -> None:
     """Append a parsed text span."""
     results.append(
-        {
-            "text": text,
-            "path": [section, subsection],
-            "start": start,
-            "end": end,
-        }
+        ParsedRecord(
+            text = text,
+            path = [section, subsection],
+            start = start,
+            end = end,
+        )
     )
 
 def next_nonempty_type(lines: list[str], start: int) -> str | None:
@@ -51,7 +52,7 @@ def next_nonempty_type(lines: list[str], start: int) -> str | None:
     return None
 
 
-def parse_lines(lines: list[str]) -> list[dict]:
+def parse_lines(lines: list[str]) -> list[ParsedRecord]:
     """
     Parse already-split lines while preserving character offsets.
     Example Input:
@@ -64,29 +65,30 @@ def parse_lines(lines: list[str]) -> list[dict]:
     Return:
     [
         {
-            "text": "Aspirin",
-            "path": [
-                "1. Medication",
-                "Current Drugs",
-            ],
-            "start": 31,
-            "end": 39,
+            ParsedRecord(
+                text="Aspirin",
+                path=["1. Medication", "Current Drugs"],
+                start=31,
+                end=39,
+            ),
         },
+        
         {
-            "text": "Metformin",
-            "path": [
+            ParsedRecord(
+                text="Metformin",
+                path=[
                 "1. Medication",
-                "Current Drugs",
-            ],
-            "start": 42,
-            "end": 52,
+                "Current Drugs"
+                ],
+                start=42
+                end=52)
         },
     ]
     """
 
     current_section = None
     current_subsection = None
-    results = []
+    results: list[ParsedRecord] = []
 
     offset = 0
     # Example raw: "    Patient has fever.   \n"
@@ -168,7 +170,7 @@ def parse_lines(lines: list[str]) -> list[dict]:
 def parse(
     filename: str | Path | None = None,
     text: str | None = None,
-) -> list[dict]:
+) -> list[ParsedRecord]:
     """
     Parse either a text file or a raw text string.
 
