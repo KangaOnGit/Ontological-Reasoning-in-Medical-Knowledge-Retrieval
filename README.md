@@ -30,7 +30,6 @@ Section-aware Chunking
       |
       v
 Medical Entity Extraction
-(LLM-based)
       |
       v
 Assertion Detection
