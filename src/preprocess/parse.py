@@ -89,17 +89,16 @@ def parse_lines(lines: list[str]) -> list[dict]:
     results = []
 
     offset = 0
-
+    # Example raw: "    Patient has fever.   \n"
     for i, raw in enumerate(lines):
-        raw_no_newline = raw.rstrip("\r\n")
-        line = raw_no_newline.strip()
+        raw_no_newline = raw.rstrip("\r\n") # "    Patient has fever.   "
+        line = raw_no_newline.strip() # "Patient has fever."
 
         # Character offsets of the stripped text
-        leading = len(raw_no_newline) - len(raw_no_newline.lstrip())
-        trailing = len(raw_no_newline) - len(raw_no_newline.rstrip())
+        leading = len(raw_no_newline) - len(raw_no_newline.lstrip()) # number of whitespaces to the left
 
-        start = offset + leading
-        end = offset + len(raw_no_newline) - trailing
+        start = offset + leading # takes start of sentence without whitespaces
+        end = start + len(line)
 
         offset += len(raw)
 
