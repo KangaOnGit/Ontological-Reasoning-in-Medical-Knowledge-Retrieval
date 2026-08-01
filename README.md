@@ -154,16 +154,23 @@ Medical terminology has both lexical and semantic variation. Combining exact mat
 
 ## Repository structure
 
-- [src/preprocess](src/preprocess): document parsing and chunking utilities
-- [src/NER](src/NER): entity extraction models and inference logic
-- [src/assertion](src/assertion): assertion classification logic
-- [src/rag](src/rag): knowledge-base construction, encoders, retrievers, and indexing
-- [src/postprocess](src/postprocess): span localization and postprocessing
-- [src/inference](src/inference): end-to-end inference and submission generation
-- [scripts](scripts): runnable scripts for building knowledge bases and executing inference
-- [configs](configs): configuration for models, retrieval, and submission settings
-- [data](data): curated inputs, ground-truth data, and generated artifacts
-- [notebooks](notebooks): exploratory notebooks used during development
+- [app.py](app.py): FastAPI application entrypoint for serving the medical retrieval pipeline.
+- [src](src): core implementation modules for preprocessing, NER, assertion detection, ontology retrieval, postprocessing, and inference.
+  - [src/preprocess](src/preprocess): document parsing, section-aware chunking, and input normalization.
+  - [src/ner](src/ner): entity extraction models and inference logic.
+  - [src/assertion](src/assertion): assertion classification logic for negation, historical, and family-history cues.
+  - [src/rag](src/rag): knowledge-base construction, retrieval, indexing, and encoder utilities.
+  - [src/postprocess](src/postprocess): span localization and output postprocessing.
+  - [src/inference](src/inference): submission generation and end-to-end pipeline orchestration.
+  - [src/api](src/api): API request helpers and service integration.
+  - [src/utils](src/utils): shared configuration and utility helpers.
+- [scripts](scripts): runnable utilities for building knowledge bases, creating vector indexes, and executing inference.
+- [configs](configs): YAML-based model, retrieval, and submission configurations.
+- [data](data): curated dataset inputs, ground truth, knowledge bases, vector indexes, and generated artifacts.
+- [docker](docker): Docker build files for API and submission images.
+- [notebooks](notebooks): exploratory notebooks and development experiments.
+- [test](test): repository tests and regression checks.
+- [competition_metrics.md](competition_metrics.md): evaluation rules and competition metrics description.
 
 ## Requirements
 
