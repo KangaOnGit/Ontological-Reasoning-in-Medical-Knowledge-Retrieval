@@ -28,3 +28,9 @@ RUN python -m scripts.rag.build_kb.build_ICD \
 EXPOSE 8000
 
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Build Image: ``docker build -t medical-ontology-retrieval-api .`` to build the API
+    # Automatically runs ``uvicorn app:app --host 0.0.0.0 --port 8000
+        # so it's gonna take longer than normal
+
+# Run Image: docker run --rm -p 8000:8000 \ -v $(pwd)/data:/app/data \  medical-ontology-retrieval-api

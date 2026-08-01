@@ -6,13 +6,12 @@ import torch
 from jinja2 import Environment, FileSystemLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from src.NER.base import Span
 from src.utils.config import HF_TOKEN
+from src.NER.base import BaseNER, Span
 
 log = logging.getLogger(__name__)
 
-
-class NERmodel:
+class LLM_NER(BaseNER):
     def __init__(
         self,
         model_name: str,
@@ -120,11 +119,8 @@ class NERmodel:
         if not output:
             log.warning("EMPTY MODEL OUTPUT")
             return []
-        
-        if not output:
-            return []
 
-        results = []
+        results: list[Span] = []
 
         for raw_line in output.splitlines():
             line = raw_line.strip()

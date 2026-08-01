@@ -1,5 +1,6 @@
 model:
-  default: Qwen3-4B-Instruct
+  type: GLINER
+  default: multi-v2.1
 
 LLM:
   Qwen3-4B-Instruct:
@@ -13,3 +14,12 @@ LLM:
     max_new_tokens: 1024
     repetition_penalty: 1.05
     prompt_path: configs/prompt/span_extraction.jinja
+
+GLINER:
+  multi-v2.1:
+    link: urchade/gliner_multi-v2.1
+    threshold: 0.5
+  
+  bi-base-v2.0:
+    link: knowledgator/gliner-bi-base-v2.0
+    threshold: 0.5
