@@ -7,10 +7,11 @@ def build_chunks(results: list[dict]) -> list[Chunk]:
     for item in results:
         groups[tuple(item["path"])].append(item)
 
-    chunks = []
+    chunks: list[Chunk] = []
 
     for (section, subsection), records in groups.items():
-        lines = []
+        lines: list[str] = []
+        record_offsets: list[int] = []
 
         if section:
             lines.append(f"Section: {section}")
@@ -21,12 +22,20 @@ def build_chunks(results: list[dict]) -> list[Chunk]:
         if lines:
             lines.append("")
 
-        lines.extend(record["text"] for record in records)
+        for record in records:
+            # Offset where this record begins in the chunk
+            chunk_so_far = "\n".join(lines)
+            record_offsets.append(
+                len(chunk_so_far) + (1 if lines else 0)
+            )
+
+            lines.append(record["text"])
 
         chunks.append(
             Chunk(
                 text="\n".join(lines),
                 records=records,
+                record_offsets=record_offsets,
             )
         )
 

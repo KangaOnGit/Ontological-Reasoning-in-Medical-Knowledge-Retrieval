@@ -118,7 +118,7 @@ class InferencePipeline:
                         "assertions": assertion,
                         "position": locate_span_position(
                             span,
-                            chunk.records,
+                            chunk
                         ),
                     }
                 )

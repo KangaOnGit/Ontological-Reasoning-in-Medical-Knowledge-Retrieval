@@ -31,52 +31,12 @@ def print_structure(results, raw_text: str):
         ok = "✓" if recovered == item["text"] else "✗"
 
         print(
-            f"    {ok} [{start:5d}, {end:5d}] "
+            f"{ok} [{start}, {end}] "
             f"{item['text']!r}"
         )
 
         if recovered != item["text"]:
-            print(f"       recovered: {recovered!r}")
-
-def test_locator():
-    print("\n" + "=" * 80)
-    print("LOCATOR TEST")
-    print("=" * 80)
-
-    file = Path("data/Round 1/P2/6.txt")
-
-    raw_text = file.read_text(encoding="utf-8")
-
-    parsed = parse(filename=file)
-    chunks = build_chunks(parsed)
-
-    total = 0
-    passed = 0
-
-    for chunk in chunks:
-        for record in chunk.records:
-            total += 1
-
-            span = Span(text=record["text"])
-
-            position = locate_span_position(span, chunk.records)
-
-            if not position:
-                print(f"✗ Could not find {record['text']!r}")
-                continue
-
-            start, end = position
-
-            recovered = raw_text[start:end]
-
-            if recovered == record["text"]:
-                passed += 1
-            else:
-                print(f"✗ Mismatch")
-                print(f"Expected : {record['text']!r}")
-                print(f"Recovered: {recovered!r}")
-
-    print(f"\nPassed {passed}/{total}")
+            print(f"recovered: {recovered!r}")
 
 def test_file():
     print("=" * 80)
@@ -100,7 +60,7 @@ def test_file():
         print(f"\n{'@'*80}")
         print(f"Chunk {i}/{len(chunks)}")
         print("-"*80)
-        print(chunk)
+        print(chunk.text)
 
 
 def test_text():
