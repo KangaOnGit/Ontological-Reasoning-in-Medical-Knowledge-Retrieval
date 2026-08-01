@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -64,14 +63,14 @@ class InferencePipeline:
         )
         log.info("Loaded HybridRetriever successfully.")
 
-    def _run_single_file(
+    def _run_parsed(
         self,
-        path: Path,
-    ) -> list[dict[str, Any]]:
+        parsed: list[dict],
+        file_name: str = "input",
+        ) -> list[dict[str, Any]]:
 
-        log.info("Processing %s", path.name)
-
-        parsed = parse(path)
+        log.info("Processing %s", file_name)
+        
         chunks = build_chunks(parsed)
 
         file_records: list[dict[str, Any]] = []
@@ -93,12 +92,10 @@ class InferencePipeline:
 
                 candidates: list[str] = []
 
-                kb = ENTITY_TO_KB.get(span.typ)
-
-                if kb:
+                if span.typ in ENTITY_TO_KB:
                     retrieval_results = self.retriever.query(
                         span.text,
-                        kb,
+                        ENTITY_TO_KB[span.typ],
                         top_k=5,
                     )
 
@@ -126,7 +123,7 @@ class InferencePipeline:
         log.info(
             "Collected %d records from %s",
             len(file_records),
-            path.name,
+            file_name,
         )
 
         return file_records
@@ -136,21 +133,14 @@ class InferencePipeline:
         text: str,
     ) -> dict[str, list[dict[str, Any]]]:
 
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            suffix=".txt",
-            delete=False,
-            encoding="utf-8",
-        ) as handle:
-            handle.write(text)
-            temp_path = Path(handle.name)
-
-        try:
-            return {
-                "input": self._run_single_file(temp_path)
-            }
-        finally:
-            temp_path.unlink(missing_ok=True)
+        parsed = parse(text=text)
+        
+        return {
+            "input": self._run_parsed(
+                parsed,
+                file_name="input",
+            )
+        }
 
     def run_file(
         self,
@@ -158,7 +148,7 @@ class InferencePipeline:
     ) -> dict[str, list[dict[str, Any]]]:
 
         path = Path(path)
-
+        
         if not path.exists():
             raise FileNotFoundError(path)
 
@@ -169,9 +159,13 @@ class InferencePipeline:
             raise ValueError(
                 "Only .txt files are supported."
             )
-
+            
+        parsed = parse(filename = path)
         return {
-            path.stem: self._run_single_file(path)
+            path.stem: self._run_parsed(
+                parsed,
+                file_name=path.name,
+            )
         }
 
     def run_submission(
@@ -190,7 +184,11 @@ class InferencePipeline:
         submission_files: dict[str, list[dict[str, Any]]] = {}
 
         for path in sorted(input_dir.glob("*.txt")):
-            submission_files[path.stem] = self._run_single_file(path)
+            parsed = parse(filename=path)
+            submission_files[path.stem] = self._run_parsed(
+                parsed,
+                file_name=path.name,
+                )
 
         if output_dir is not None:
             output_dir = Path(output_dir)
