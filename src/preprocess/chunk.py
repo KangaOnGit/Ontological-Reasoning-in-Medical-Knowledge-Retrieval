@@ -30,11 +30,11 @@ def build_chunks(results: list[dict]) -> list[Chunk]:
             curr_offset += 1  # blank line ("\n")
 
         for record in records:
-            record_offsets.append(current_offset)
+            record_offsets.append(curr_offset)
 
             line = record["text"]
             lines.append(line)
-            current_offset += len(line) + 1  # newline
+            curr_offset += len(line) + 1  # newline
 
         chunks.append(
             Chunk(

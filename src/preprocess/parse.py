@@ -52,7 +52,37 @@ def next_nonempty_type(lines: list[str], start: int) -> str | None:
 
 
 def parse_lines(lines: list[str]) -> list[dict]:
-    """Parse already-split lines while preserving character offsets."""
+    """
+    Parse already-split lines while preserving character offsets.
+    Example Input:
+        1. Medication
+
+        Current Drugs
+        - Aspirin
+        - Metformin
+        
+    Return:
+    [
+        {
+            "text": "Aspirin",
+            "path": [
+                "1. Medication",
+                "Current Drugs",
+            ],
+            "start": 31,
+            "end": 39,
+        },
+        {
+            "text": "Metformin",
+            "path": [
+                "1. Medication",
+                "Current Drugs",
+            ],
+            "start": 42,
+            "end": 52,
+        },
+    ]
+    """
 
     current_section = None
     current_subsection = None
