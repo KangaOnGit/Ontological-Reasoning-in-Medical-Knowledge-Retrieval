@@ -68,10 +68,12 @@ class GLiNER_NER(BaseNER):
             )
 
             for ent in entities:
+                
                 typ = self.label_map.get(ent["label"])
                 if not typ:
                     log.warning("Skipping Unknown Label %s", ent["label"])
                     continue
+                
                 spans.append(
                     Span(
                         text=ent["text"],

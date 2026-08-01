@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Any
-
+from collections import defaultdict
 from src.NER.builder import build_ner
 from src.assertion.classifier import rule_based_assertion
 from src.inference.writer import write_submission_zip
@@ -69,6 +69,7 @@ class InferencePipeline:
         file_name: str = "input",
         ) -> list[dict[str, Any]]:
 
+        cache: dict[tuple[str, str], list[str]] = {}
         log.info("Processing %s", file_name)
         
         chunks = build_chunks(parsed)
@@ -93,19 +94,24 @@ class InferencePipeline:
                 candidates: list[str] = []
 
                 if span.typ in ENTITY_TO_KB:
-                    retrieval_results = self.retriever.query(
-                        span.text,
-                        ENTITY_TO_KB[span.typ],
-                        top_k=5,
-                    )
-
-                    candidates = list(
-                        dict.fromkeys(
-                            item.id
-                            for item in retrieval_results
-                            if item.id
+                    key = (span.text.strip().lower(), span.typ)
+                    if key in cache:
+                        candidates = cache[key]
+                    else:
+                        retrieval_results = self.retriever.query(
+                            span.text,
+                            ENTITY_TO_KB[span.typ],
+                            top_k=5,
                         )
-                    )
+
+                        candidates = list(
+                            dict.fromkeys(
+                                item.id
+                                for item in retrieval_results
+                                if item.id
+                            )
+                        )
+                        cache[key] = candidates
 
                 file_records.append(
                     {
