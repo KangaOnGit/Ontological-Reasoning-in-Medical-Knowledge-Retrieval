@@ -13,23 +13,28 @@ def build_chunks(results: list[dict]) -> list[Chunk]:
         lines: list[str] = []
         record_offsets: list[int] = []
 
+        curr_offset = 0
+        
         if section:
-            lines.append(f"Section: {section}")
+            line = f"Section: {section}"
+            lines.append(line)
+            curr_offset += len(line) + 1  # newline
 
         if subsection:
-            lines.append(f"Subsection: {subsection}")
+            line = f"Subsection: {subsection}"
+            lines.append(line)
+            curr_offset += len(line) + 1  # newline
 
         if lines:
             lines.append("")
+            curr_offset += 1  # blank line ("\n")
 
         for record in records:
-            # Offset where this record begins in the chunk
-            chunk_so_far = "\n".join(lines)
-            record_offsets.append(
-                len(chunk_so_far) + (1 if lines else 0)
-            )
+            record_offsets.append(current_offset)
 
-            lines.append(record["text"])
+            line = record["text"]
+            lines.append(line)
+            current_offset += len(line) + 1  # newline
 
         chunks.append(
             Chunk(
