@@ -37,7 +37,7 @@ Assertion Detection
       |
       v
 +---------------------------+
-| Candidate Retrieval        |
+| Candidate Retrieval       |
 |                           |
 | Exact Alias Matching      |
 | BM25 Sparse Retrieval     |
@@ -45,9 +45,8 @@ Assertion Detection
 +---------------------------+
       |
       v
-Candidate Ranking
-&
-Score Fusion
+Weighted Reciprocal
+Rank Fusion (RRF)
       |
       v
 ICD-10 / RxNorm Concept
@@ -169,40 +168,43 @@ Official benchmark scores are omitted because parts of the competition evaluatio
 
 The retrieval module follows a multi-stage candidate generation and ranking framework:
 
-1. Exact Alias Matching
+1. **Exact Alias Matching**
    - Performs deterministic lookup against curated medical aliases.
    - Provides high-confidence matches when clinical text contains known terminology.
 
-2. Sparse Retrieval with BM25
+2. **Sparse Retrieval with BM25**
    - Retrieves candidates based on lexical similarity.
    - Handles spelling variations, abbreviations, and partial matches.
 
-3. Dense Retrieval with FAISS
+3. **Dense Retrieval with FAISS**
    - Uses embedding-based semantic similarity for paraphrases and conceptually related expressions.
    - Helps retrieve concepts when lexical overlap is limited.
 
-4. Weighted Score Fusion
+4. **Weighted Reciprocal Rank Fusion (Weighted RRF)**
 
-Candidate scores from different retrieval methods are normalized before fusion:
+The ranked candidate lists from each retrieval method are combined using **Weighted Reciprocal Rank Fusion (Weighted RRF)**:
 
-$$\mathrm{Score}(c) = w_e \hat{S}_{\mathrm{alias}}(c) + w_b \hat{S}_{\mathrm{BM25}}(c) + w_f \hat{S}_{\mathrm{FAISS}}(c)$$
-
-Exact matching improves precision for known medical expressions, while BM25 and FAISS improve recall for noisy, abbreviated, or semantically similar mentions.
+$$\mathrm{RRF}(c)= w_e\frac{1}{k+r_{\mathrm{alias}}(c)} + w_b\frac{1}{k+r_{\mathrm{BM25}}(c)} + w_f\frac{1}{k+r_{\mathrm{FAISS}}(c)}$$
 
 where:
 
-- $\hat{S}_{alias}$ represents normalized exact alias matching confidence
-- $\hat{S}_{BM25}$ represents normalized lexical similarity
-- $\hat{S}_{FAISS}$ represents normalized semantic similarity
-- $w_e,w_b,w_f$ are configurable weights
+* $r_{\mathrm{alias}}(c)$ is the rank of candidate $c$ returned by exact alias matching.
+* $r_{\mathrm{BM25}}(c)$ is the rank of candidate $c$ returned by BM25 retrieval.
+* $r_{\mathrm{FAISS}}(c)$ is the rank of candidate $c$ returned by FAISS retrieval.
+* $w_e$, $w_b$, and $w_f$ are configurable weights assigned to each retrieval method.
+* $k$ is the RRF constant (typically 60), which reduces the influence of lower-ranked candidates.
 
-This ranking strategy combines deterministic matching with semantic retrieval, improving robustness for noisy clinical text. 
+Unlike score-based fusion, Weighted RRF combines candidate rankings rather than raw similarity scores, making the retrieval process robust to differences in scoring scales across retrieval methods.
+
+Exact alias matching provides high precision for known medical terminology, while BM25 and FAISS improve recall for abbreviated, noisy, and semantically similar clinical expressions. The fused ranking leverages the complementary strengths of all three retrieval methods to produce a robust final candidate ranking.
 
 ### Models
 
-- LLM-based NER (self-hosted):
+- NER (self-hosted):
   - Qwen3-8B
   - Qwen3-4B-Instruct-2507
+  - GLiNER-multi-v2.1
+  - GLiNER-bi-base-v2.0
   
 - Text embedding model:
   - SapBERT
@@ -243,7 +245,7 @@ Medical terminology has both lexical and semantic variation. Combining exact mat
 ## Repository structure
 
 - [src/preprocess](src/preprocess): document parsing and chunking utilities
-- [src/NER](src/NER): entity extraction model and inference logic
+- [src/NER](src/NER): entity extraction models and inference logic
 - [src/assertion](src/assertion): assertion classification logic
 - [src/rag](src/rag): knowledge-base construction, encoders, retrievers, and indexing
 - [src/postprocess](src/postprocess): span localization and postprocessing
