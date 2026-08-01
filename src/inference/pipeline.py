@@ -76,7 +76,7 @@ class InferencePipeline:
         file_records: list[dict[str, Any]] = []
 
         for chunk in chunks:
-            spans = self.ner_model.forward(chunk.text)
+            spans = self.ner_model.forward(chunk)
 
             for span in spans:
                 if (
