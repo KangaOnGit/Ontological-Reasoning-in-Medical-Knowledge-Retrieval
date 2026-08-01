@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any
 from collections import defaultdict
-from src.NER.builder import build_ner
+from src.ner.builder import build_ner
 from src.assertion.classifier import rule_based_assertion
 from src.inference.writer import write_submission_zip
 from src.postprocess.span_locator import locate_span_position

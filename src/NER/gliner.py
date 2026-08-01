@@ -1,5 +1,5 @@
 from gliner import GLiNER
-from src.NER.base import BaseNER, Span
+from src.ner.base import BaseNER, Span
 from src.preprocess.base import Chunk
 from typing import Dict
 import logging

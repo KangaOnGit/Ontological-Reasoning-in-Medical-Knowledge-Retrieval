@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.utils.config import HF_TOKEN
-from src.NER.base import BaseNER, Span
+from src.ner.base import BaseNER, Span
 
 log = logging.getLogger(__name__)
 

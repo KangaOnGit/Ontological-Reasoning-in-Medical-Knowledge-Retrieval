@@ -1,8 +1,8 @@
 # src/NER/factory.py
 
-from src.NER.base import BaseNER
-from src.NER.llm import LLM_NER
-from src.NER.gliner import GLiNER_NER
+from src.ner.base import BaseNER
+from src.ner.llm import LLM_NER
+from src.ner.gliner import GLiNER_NER
 from src.utils.config import load_config
 
 CONFIG_NER = load_config("configs/NER.yaml")
