@@ -19,40 +19,10 @@ The implementation emphasizes modularity and reproducibility, enabling each stag
 
 ## System Architecture
 
-```text
-Clinical Note
-      |
-      v
-Document Parser
-      |
-      v
-Section-aware Chunking
-      |
-      v
-Medical Entity Extraction
-      |
-      v
-Assertion Detection
-      |
-      v
-+---------------------------+
-| Candidate Retrieval       |
-|                           |
-| Exact Alias Matching      |
-| BM25 Sparse Retrieval     |
-| FAISS Dense Retrieval     |
-+---------------------------+
-      |
-      v
-Weighted Reciprocal
-Rank Fusion (RRF)
-      |
-      v
-ICD-10 / RxNorm Concept
-      |
-      v
-Submission Generator
-```
+<p align="center">
+<img src="images\Ontological_Pipeline.png" width="700"><br>
+<b>Figure 1.</b> System Architecture.
+</p>
 
 ## Problem Statement
 
@@ -98,7 +68,7 @@ Generate and rank ontology candidates using:
 - BM25 sparse retrieval
 - FAISS dense retrieval
 
-### 5. Concept Normalization and Submission Generation
+### 5. Submission Generation
 
 Select final ontology concepts and convert them into the required structured output format.
 

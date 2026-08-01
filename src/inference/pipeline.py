@@ -138,7 +138,6 @@ class InferencePipeline:
         self,
         text: str,
     ) -> dict[str, list[dict[str, Any]]]:
-
         parsed = parse(text=text)
         
         return {

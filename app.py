@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-
+from src.api.request import TextRequest
 from src.inference.pipeline import InferencePipeline
 from src.utils.config import load_config
 
@@ -37,79 +37,37 @@ def startup() -> None:
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
-async def run_prediction(
-    text: str | None = None,
-    file: UploadFile | None = None,
+@app.post("/predict/file")
+async def predict_file(
+    file: UploadFile = File(...)
 ) -> dict[str, list[dict[str, Any]]]:
     if pipeline is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Pipeline not initialized.",
-        )
+        raise HTTPException(503,
+                            "Pipeline not initialized.")
 
-    if file is not None and text is not None and text.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="Provide either text or a file, not both.",
-        )
+    if Path(file.filename).suffix.lower() != ".txt":
+        raise HTTPException(400,
+                            "Only .txt files are supported.")
+
+    contents = await file.read()
 
     try:
-        if file is not None:
-            if (
-                not file.filename
-                or Path(file.filename).suffix.lower() != ".txt"
-            ):
-                raise HTTPException(
-                    status_code=400,
-                    detail="Only .txt uploads are supported.",
-                )
+        text = contents.decode("utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(400,
+                            "Uploaded file must be UTF-8 encoded.")
 
-            contents = await file.read()
-
-            if not contents.strip():
-                raise HTTPException(
-                    status_code=400,
-                    detail="Uploaded file is empty.",
-                )
-
-            try:
-                text = contents.decode("utf-8")
-            except UnicodeDecodeError:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Uploaded file must be UTF-8 encoded.",
-                )
-
-            return pipeline.run_text(text)
-
-        if text is None or not text.strip():
-            raise HTTPException(
-                status_code=400,
-                detail="Either a .txt file or non-empty text input must be provided.",
-            )
-
-        return pipeline.run_text(text)
-
-    except HTTPException:
-        raise
-
-    except Exception:
-        log.exception("Prediction failed")
-        raise HTTPException(
-            status_code=500,
-            detail="Internal server error.",
-        )
-
-
-@app.post("/predict")
-async def predict(
-    text: str = Form(default=""),
-    file: UploadFile | None = File(default=None),
+    return pipeline.run_text(text)
+    
+@app.post("/predict/text")
+async def predict_text(
+    request: TextRequest,
 ) -> dict[str, list[dict[str, Any]]]:
-    return await run_prediction(
-        text=text or None,
-        file=file,
-    )
+    if pipeline is None:
+        raise HTTPException(503,
+                            "Pipeline not initialized.")
+
+    return pipeline.run_text(request.text)
 
 
 if __name__ == "__main__":
@@ -117,4 +75,4 @@ if __name__ == "__main__":
 
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False,)
 
-# uvicorn app:app --host 0.0.0.0 --port 8000
+# uvicorn app:app --host 0.0.0.0 --port 8000 --reload
