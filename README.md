@@ -184,7 +184,7 @@ pip install -r requirements.txt
 
 ```bash
 git clone <repository-url>
-cd "Ontological Reasoning in Medical Knowledge Retrieval"
+cd "Ontological Reasoning in Medical Knowledge Retrieval for Vietnamese Clinical Notes"
 pip install -r requirements.txt
 ```
 
