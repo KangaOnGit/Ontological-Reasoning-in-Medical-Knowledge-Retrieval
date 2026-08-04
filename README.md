@@ -155,7 +155,7 @@ Medical terminology has both lexical and semantic variation. Combining exact mat
   - [src/preprocess](src/preprocess): document parsing, section-aware chunking, and input normalization.
   - [src/ner](src/ner): entity extraction models and inference logic.
   - [src/assertion](src/assertion): assertion classification logic for negation, historical, and family-history cues.
-  - [src/rag](src/rag): knowledge-base construction, retrieval, indexing, and encoder utilities.
+  - [src/rag](src/rag):   knowledge-base construction, retrieval, indexing, and encoder utilities.
   - [src/postprocess](src/postprocess): span localization and output postprocessing.
   - [src/inference](src/inference): submission generation and end-to-end pipeline orchestration.
   - [src/api](src/api): API request helpers and service integration.
