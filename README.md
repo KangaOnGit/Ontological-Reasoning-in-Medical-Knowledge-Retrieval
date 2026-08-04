@@ -300,15 +300,17 @@ Key configuration files include:
 
 Running the pipeline produces structured per-file submission records and a ZIP archive in the configured output directory.
 
-## Evaluation Limitations
+## Evaluation
 
-This repository contains the complete end-to-end pipeline developed for Viettel AI Race – Track 2. However, the official competition results cannot be independently verified because several aspects of the evaluation protocol were not publicly specified:
+This repository contains the complete end-to-end pipeline developed for Viettel AI Race – Track 2: Medical Ontological Reasoning in Knowledge Retrieval.
 
-- the exact ICD-10 and RxNorm ontology versions
-- complete annotation guidelines
-- ontology candidate matching rules
+The competition evaluation environment and full evaluation specifications were not publicly available, including:
 
-As a result, evaluation scores may differ even when using the same methodology. The repository includes the complete extraction, assertion detection, retrieval, ranking, and inference pipeline.
+- ICD-10 and RxNorm ontology versions
+- Complete annotation guidelines
+- Ontology candidate matching rules
+
+Therefore, benchmark results may not be fully reproducible outside the original evaluation setting. The repository provides the complete extraction, assertion detection, retrieval, ranking, and inference pipeline.
 
 ## Notes
 
