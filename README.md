@@ -71,10 +71,6 @@ Generate and rank ontology candidates using:
 
 Select final ontology concepts and convert them into the required structured output format.
 
-## Results
-
-Official benchmark scores are omitted because parts of the competition evaluation protocol, including ontology versions and annotation guidelines, were not publicly disclosed. See Evaluation Limitations for details.
-
 ## Retrieval Architecture
 
 The retrieval module follows a multi-stage candidate generation and ranking framework:
@@ -128,7 +124,7 @@ All models are deployed locally without external API calls, enabling fully offli
 - Python
 - PyTorch and Transformers
 - FAISS for vector indexing
-- Hugging Face model integration
+- Hugging Face Transformers and model integration
 - YAML-based configuration
 - Pandas, NumPy, and PyYAML for data processing and orchestration
 - Docker
@@ -138,7 +134,7 @@ All models are deployed locally without external API calls, enabling fully offli
 
 ### LLM-based Medical Entity Extraction
 
-Vietnamese clinical NLP resources remain limited, especially for mixed Vietnamese-English medical notes containing abbreviations, spelling variations, and inconsistent terminology. A self-hosted LLM provides greater robustness to these challenges than traditional sequence-labeling approaches while requiring minimal task-specific training data. The extraction component is designed to prioritize recall, allowing the downstream ontology retrieval and ranking stages to filter and normalize candidate concepts.
+Vietnamese clinical NLP resources remain limited, especially for mixed Vietnamese-English medical notes containing abbreviations, spelling variations, and inconsistent terminology. Under the competition constraint requiring locally deployed models without external APIs, an LLM-based extraction approach was selected to handle diverse clinical expressions while minimizing task-specific training requirements. The extraction component prioritizes recall, allowing downstream ontology retrieval and ranking stages to normalize extracted concepts.
 
 ### Rule-based Assertion Detection
 
@@ -300,21 +296,9 @@ Key configuration files include:
 
 Running the pipeline produces structured per-file submission records and a ZIP archive in the configured output directory.
 
-## Evaluation
-
-This repository contains the complete end-to-end pipeline developed for Viettel AI Race – Track 2: Medical Ontological Reasoning in Knowledge Retrieval.
-
-The competition evaluation environment and full evaluation specifications were not publicly available, including:
-
-- ICD-10 and RxNorm ontology versions
-- Complete annotation guidelines
-- Ontology candidate matching rules
-
-Therefore, benchmark results may not be fully reproducible outside the original evaluation setting. The repository provides the complete extraction, assertion detection, retrieval, ranking, and inference pipeline.
-
 ## Notes
 
-This repository is intended for experimentation and research in biomedical NLP and knowledge-grounded retrieval. It relies on external model downloads and local knowledge-base artifacts, so internet access and sufficient compute resources may be required for full execution.
+This repository demonstrates an end-to-end biomedical NLP and ontology retrieval pipeline. It relies on external model downloads and local knowledge-base artifacts, so internet access and sufficient compute resources may be required for full execution.
 
 ## Data Sources
 

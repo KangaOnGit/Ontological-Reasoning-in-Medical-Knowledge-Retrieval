@@ -229,3 +229,5 @@ data/VectorDB/RXNorm
 *.faiss
 *.npy
 *.parquet
+
+rant.md
